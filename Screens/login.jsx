@@ -1,9 +1,10 @@
 import { Ionicons } from '@expo/vector-icons';
 import AntDesign from '@expo/vector-icons/AntDesign';
+import { useNavigation } from '@react-navigation/native';
 import React from 'react';
 import { SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-
 const LoginScreen = () => {
+    const navigator = useNavigation()
   return (
     <SafeAreaView style={styles.container}>
     
@@ -56,10 +57,10 @@ const LoginScreen = () => {
         </TouchableOpacity>
 
 
-        <TouchableOpacity style={styles.signUpContainer}>
+        <TouchableOpacity style={styles.signUpContainer}onPress={()=>{navigator.navigate('SignUp')}}>
           <Text style={styles.signUpText}>
             Don't have an account?{' '}
-            <Text style={styles.signUpLink}>Sign Up</Text>
+            <Text style={styles.signUpLink }>Sign Up</Text>
           </Text>
         </TouchableOpacity>
       </View>

@@ -1,7 +1,7 @@
 
-import SignUpScreen from "@/Screens/Signup";
+import Main from "./main"
 
 export default function App() {
-  return <SignUpScreen/>
+  return <Main/>
   
 }
