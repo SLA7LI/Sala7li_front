@@ -1,7 +1,7 @@
 
-import LocationScreen from "@/Screens/selectmap"
+import JobHeatmapScreen from "@/Screens/heatmap"
 
 export default function App() {
-  return <LocationScreen/>
+  return <JobHeatmapScreen/>
   
 }
