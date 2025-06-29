@@ -1,7 +1,7 @@
 
-import Main from "./main"
+import LocationScreen from "@/Screens/selectmap"
 
 export default function App() {
-  return <Main/>
+  return <LocationScreen/>
   
 }
