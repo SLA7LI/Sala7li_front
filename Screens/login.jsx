@@ -6,20 +6,20 @@ import { SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, View } fro
 const LoginScreen = () => {
   return (
     <SafeAreaView style={styles.container}>
-      {/* Logo en haut */}
+    
       <View style={styles.logoContainer}>
        <AntDesign name="appstore-o" size={50} color="black" />
       </View>
 
-      {/* Titre et sous-titre */}
+
       <View style={styles.header}>
         <Text style={styles.title}>Welcome back</Text>
         <Text style={styles.subtitle}>Sign in to your account</Text>
       </View>
 
-      {/* Formulaire */}
+
       <View style={styles.form}>
-        {/* Champ Email */}
+
         <View style={styles.inputContainer}>
           <Ionicons name="mail-outline" size={24} color="#0A77FF" style={styles.icon} />
           <TextInput
@@ -31,7 +31,7 @@ const LoginScreen = () => {
           />
         </View>
 
-        {/* Champ Password */}
+
         <View style={styles.inputContainer}>
           <Ionicons name="lock-closed-outline" size={24} color="#0A77FF" style={styles.icon} />
           <TextInput
@@ -42,20 +42,20 @@ const LoginScreen = () => {
           />
         </View>
 
-        {/* Lien "Forgot password" */}
+
         <TouchableOpacity style={styles.forgotPassword}>
           <Text style={styles.forgotPasswordText}>Forgot your password?</Text>
         </TouchableOpacity>
       </View>
 
-      {/* Bottom container for button and sign up link */}
+
       <View style={styles.bottomContainer}>
-        {/* Bouton de connexion */}
+
         <TouchableOpacity style={styles.loginButton}>
           <Text style={styles.loginButtonText}>Sign In</Text>
         </TouchableOpacity>
 
-        {/* Sign Up link */}
+
         <TouchableOpacity style={styles.signUpContainer}>
           <Text style={styles.signUpText}>
             Don't have an account?{' '}
