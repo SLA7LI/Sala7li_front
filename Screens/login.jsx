@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import AntDesign from '@expo/vector-icons/AntDesign';
 import React from 'react';
 import { SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
@@ -7,7 +8,7 @@ const LoginScreen = () => {
     <SafeAreaView style={styles.container}>
       {/* Logo en haut */}
       <View style={styles.logoContainer}>
-        <Ionicons name="logo-expo" size={80} color="white" />
+       <AntDesign name="appstore-o" size={50} color="black" />
       </View>
 
       {/* Titre et sous-titre */}
@@ -45,10 +46,21 @@ const LoginScreen = () => {
         <TouchableOpacity style={styles.forgotPassword}>
           <Text style={styles.forgotPasswordText}>Forgot your password?</Text>
         </TouchableOpacity>
+      </View>
 
+      {/* Bottom container for button and sign up link */}
+      <View style={styles.bottomContainer}>
         {/* Bouton de connexion */}
         <TouchableOpacity style={styles.loginButton}>
           <Text style={styles.loginButtonText}>Sign In</Text>
+        </TouchableOpacity>
+
+        {/* Sign Up link */}
+        <TouchableOpacity style={styles.signUpContainer}>
+          <Text style={styles.signUpText}>
+            Don't have an account?{' '}
+            <Text style={styles.signUpLink}>Sign Up</Text>
+          </Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -58,7 +70,7 @@ const LoginScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'wihite',
+    backgroundColor: 'white',
     paddingHorizontal: 20,
   },
   logoContainer: {
@@ -108,15 +120,34 @@ const styles = StyleSheet.create({
     color: '#0A77FF',
     fontSize: 14,
   },
+  bottomContainer: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    marginBottom: 30,
+  },
   loginButton: {
     backgroundColor: '#0A77FF',
     padding: 15,
-    borderRadius: 5,
+    marginLeft: 20,
+    marginRight: 20,
+    borderRadius: 10,
     alignItems: 'center',
   },
   loginButtonText: {
     color: 'white',
     fontSize: 16,
+    fontWeight: 'bold',
+  },
+  signUpContainer: {
+    marginTop: 15,
+    alignItems: 'center',
+  },
+  signUpText: {
+    fontSize: 14,
+    color: 'gray',
+  },
+  signUpLink: {
+    color: '#0A77FF',
     fontWeight: 'bold',
   },
 });
