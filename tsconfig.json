@@ -12,6 +12,9 @@
     "**/*.js",
     "**/*.jsx",
     ".expo/types/**/*.js",
-    "expo-env.d.js"
-, "app/index.jsx"  ]
+    "expo-env.d.js",
+    "app/index.jsx",
+    ".expo/types/**/*.ts",
+    "expo-env.d.ts"
+  ]
 }
