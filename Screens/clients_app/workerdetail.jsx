@@ -186,7 +186,7 @@ const AllWorkersScreen = ({ navigation, route }) => {
       </View>
 
       {/* Title */}
-      <Text style={styles.title}>Recommendation</Text>
+      <Text style={styles.title}>Workers</Text>
 
       {/* Search Bar */}
       <View style={styles.searchContainer}>

@@ -1,4 +1,4 @@
-import { useNavigation } from '@react-navigation/native'; // <-- Add this import
+import { useNavigation } from '@react-navigation/native';
 import React, { useEffect, useState } from 'react';
 import {
     ActivityIndicator,
@@ -12,19 +12,25 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
+import Service_client from '../../api/client_service';
 import manage_worker from '../../api/worker';
 
 const WorkersScreen = () => {
-  const navigation = useNavigation(); // <-- Add this line
+  const navigation = useNavigation();
   const [workers, setWorkers] = useState([]);
+  const [serviceRequest, setServiceRequest] = useState(null); // Un seul service request
   const [loading, setLoading] = useState(true);
+  const [serviceLoading, setServiceLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState('All');
+  const [selectedServiceFilter, setSelectedServiceFilter] = useState('All'); // Filtre pour les services
   const [searchQuery, setSearchQuery] = useState('');
 
   const categories = ['All','Electrician', 'Painter', 'Menuiserie', 'Peinture'];
+  const serviceFilters = ['All', 'Done', 'Open']; // Filtres pour les services
 
   useEffect(() => {
     fetchWorkers();
+    fetchServiceRequest();
   }, []);
 
   const fetchWorkers = async () => {
@@ -40,6 +46,20 @@ const WorkersScreen = () => {
     }
   };
 
+  // Fonction pour récupérer le service request
+  const fetchServiceRequest = async () => {
+    try {
+      setServiceLoading(true);
+      const response = await Service_client.getServiceRequestsClient();
+      setServiceRequest(response.data || null);
+    } catch (error) {
+      console.error('Error fetching service request:', error);
+      Alert.alert('Error', 'Failed to load service request');
+    } finally {
+      setServiceLoading(false);
+    }
+  };
+
   const filteredWorkers = workers.filter(worker => {
     const matchesCategory = selectedCategory === 'All' || 
       worker.worker?.genre?.toLowerCase().includes(selectedCategory.toLowerCase());
@@ -47,6 +67,15 @@ const WorkersScreen = () => {
       worker.worker?.genre?.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCategory && matchesSearch;
   });
+
+  // Vérifier si le service request correspond au filtre
+  const shouldShowServiceRequest = () => {
+    if (!serviceRequest) return false;
+    if (selectedServiceFilter === 'All') return true;
+    if (selectedServiceFilter === 'Done') return serviceRequest.status === 'completed';
+    if (selectedServiceFilter === 'Open') return serviceRequest.status === 'open';
+    return true;
+  };
 
   const renderStars = (rating) => {
     const stars = [];
@@ -113,6 +142,63 @@ const WorkersScreen = () => {
       </View>
     </View>
   );
+
+  // Rendu pour la carte de service request
+  const renderServiceRequestCard = () => {
+    if (!serviceRequest) return null;
+    
+    const isCompleted = serviceRequest.status === 'completed';
+    const isOpen = serviceRequest.status === 'open';
+    
+    return (
+      <View style={styles.serviceCard}>
+        <View style={styles.serviceHeader}>
+          <View style={styles.serviceInfo}>
+            <Text style={styles.serviceCategory}>{serviceRequest.category}</Text>
+            <View style={[
+              styles.serviceStatus, 
+              isCompleted ? styles.serviceStatusCompleted : 
+              isOpen ? styles.serviceStatusOpen : styles.serviceStatusDefault
+            ]}>
+              <Text style={[
+                styles.serviceStatusText,
+                isCompleted ? styles.serviceStatusTextCompleted : 
+                isOpen ? styles.serviceStatusTextOpen : styles.serviceStatusTextDefault
+              ]}>
+                {isCompleted ? 'Done' : isOpen ? 'Open' : serviceRequest.status}
+              </Text>
+            </View>
+          </View>
+          <Text style={styles.serviceBudget}>{serviceRequest.budget} DA</Text>
+        </View>
+
+        <Text style={styles.serviceDescription} numberOfLines={3}>
+          {serviceRequest.description}
+        </Text>
+
+        <View style={styles.serviceDetails}>
+          <Text style={styles.serviceUrgency}>
+            Urgency: <Text style={styles.serviceUrgencyValue}>{serviceRequest.urgency}</Text>
+          </Text>
+          <Text style={styles.serviceDate}>
+            {new Date(serviceRequest.createdAt).toLocaleDateString()}
+          </Text>
+        </View>
+
+        <View style={styles.serviceLocation}>
+          <Text style={styles.serviceLocationText}>
+            📍 Lat: {serviceRequest.latitude}, Lng: {serviceRequest.longitude}
+          </Text>
+        </View>
+
+        <View style={styles.serviceFooter}>
+          <TouchableOpacity style={styles.createBidButton}>
+            <Text style={styles.createBidText}>+ Create Bid</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  };
 
   if (loading) {
     return (
@@ -206,14 +292,56 @@ const WorkersScreen = () => {
           {filteredWorkers.map(renderWorkerCard)}
         </ScrollView>
 
-     
-    
+        {/* Service Requests Section */}
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>Service Requests</Text>
+          <TouchableOpacity>
+            <Text style={styles.viewAllText}>View all</Text>
+          </TouchableOpacity>
+        </View>
 
-      
+        {/* Service Request Filters */}
+        <ScrollView 
+          horizontal 
+          showsHorizontalScrollIndicator={false}
+          style={styles.categoriesContainer}
+        >
+          {serviceFilters.map((filter) => (
+            <TouchableOpacity
+              key={filter}
+              style={[
+                styles.categoryButton,
+                selectedServiceFilter === filter && styles.categoryButtonActive
+              ]}
+              onPress={() => setSelectedServiceFilter(filter)}
+            >
+              <Text style={[
+                styles.categoryText,
+                selectedServiceFilter === filter && styles.categoryTextActive
+              ]}>
+                {filter}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+
+        {/* Service Request Display */}
+        <View style={styles.servicesContainer}>
+          {serviceLoading ? (
+            <View style={styles.servicesLoadingContainer}>
+              <ActivityIndicator size="small" color="#007AFF" />
+              <Text style={styles.servicesLoadingText}>Loading service request...</Text>
+            </View>
+          ) : shouldShowServiceRequest() ? (
+            renderServiceRequestCard()
+          ) : (
+            <View style={styles.emptyServicesContainer}>
+              <Text style={styles.emptyServicesText}>No service requests available</Text>
+              <Text style={styles.emptyServicesSubtext}>Try adjusting your filters</Text>
+            </View>
+          )}
+        </View>
       </ScrollView>
-
-      {/* Bottom Navigation */}
-
     </SafeAreaView>
   );
 };
@@ -490,34 +618,140 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     textAlign: 'right',
   },
-  bottomNav: {
-    flexDirection: 'row',
-    backgroundColor: 'white',
-    paddingVertical: 8,
+  
+  // STYLES POUR LES SERVICE REQUESTS
+  servicesContainer: {
     paddingHorizontal: 20,
-    borderTopWidth: 1,
-    borderTopColor: '#E5E5EA',
+    marginBottom: 30,
   },
-  navItem: {
+  serviceCard: {
+    backgroundColor: 'white',
+    borderRadius: 16,
+    padding: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  serviceHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 12,
+  },
+  serviceInfo: {
     flex: 1,
+    flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 8,
   },
-  navIcon: {
-    fontSize: 20,
-    marginBottom: 4,
-    color: '#8E8E93',
+  serviceCategory: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1D1D1F',
+    marginRight: 12,
   },
-  navIconActive: {
-    color: '#007AFF',
+  serviceStatus: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
   },
-  navText: {
+  serviceStatusCompleted: {
+    backgroundColor: '#D1FAE5',
+  },
+  serviceStatusOpen: {
+    backgroundColor: '#DBEAFE',
+  },
+  serviceStatusDefault: {
+    backgroundColor: '#FEF3C7',
+  },
+  serviceStatusText: {
     fontSize: 12,
-    color: '#8E8E93',
     fontWeight: '500',
   },
-  navTextActive: {
+  serviceStatusTextCompleted: {
+    color: '#065F46',
+  },
+  serviceStatusTextOpen: {
+    color: '#1E40AF',
+  },
+  serviceStatusTextDefault: {
+    color: '#92400E',
+  },
+  serviceBudget: {
+    fontSize: 16,
+    fontWeight: 'bold',
     color: '#007AFF',
+  },
+  serviceDescription: {
+    fontSize: 14,
+    color: '#8E8E93',
+    lineHeight: 18,
+    marginBottom: 12,
+  },
+  serviceDetails: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  serviceUrgency: {
+    fontSize: 12,
+    color: '#8E8E93',
+  },
+  serviceUrgencyValue: {
+    fontWeight: '600',
+    color: '#1D1D1F',
+  },
+  serviceDate: {
+    fontSize: 12,
+    color: '#8E8E93',
+  },
+  serviceLocation: {
+    marginBottom: 12,
+  },
+  serviceLocationText: {
+    fontSize: 12,
+    color: '#8E8E93',
+  },
+  serviceFooter: {
+    alignItems: 'flex-end',
+  },
+  createBidButton: {
+    backgroundColor: '#007AFF',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+  },
+  createBidText: {
+    fontSize: 14,
+    color: 'white',
+    fontWeight: '500',
+  },
+  servicesLoadingContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 20,
+  },
+  servicesLoadingText: {
+    marginLeft: 10,
+    fontSize: 14,
+    color: '#8E8E93',
+  },
+  emptyServicesContainer: {
+    alignItems: 'center',
+    paddingVertical: 40,
+  },
+  emptyServicesText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#8E8E93',
+    marginBottom: 4,
+  },
+  emptyServicesSubtext: {
+    fontSize: 14,
+    color: '#8E8E93',
   },
 });
 

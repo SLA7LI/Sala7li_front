@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const api_key = 'http://192.168.169.76:3000/api/v1/auth'
+const api_key = 'http://192.168.169.76:3000/api/v1/'
 
 
 const Service_client = {
@@ -9,7 +9,10 @@ getServiceRequestsClient : async ()=> {
 
 
   try {
-    const response = await axios.get(`${api_key}servicerequests/client`);
+    const response = await axios.get(`${api_key}servicerequests/client`, {  headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiaG9jaW5lYUBleGFtcGxlLmNvbSIsImlhdCI6MTc1MTMxNDM4NiwiZXhwIjoxNzUxMzUwMzg2fQ.FagsMzUjhmTcFidu7GDE58yD8KbAKzKZok7RT9J5GFI`,
+      },});
     return response.data; 
   } catch (error) {
 
