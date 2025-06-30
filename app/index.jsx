@@ -1,7 +1,7 @@
 
-import ExpertiseSelectionScreen from "@/Screens/Signup3"
+import IdentityVerificationScreen from "@/Screens/Signup5"
 
 export default function App() {
-  return <ExpertiseSelectionScreen/>
+  return <IdentityVerificationScreen />
   
 }
