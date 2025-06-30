@@ -1,7 +1,8 @@
+import { registerAsWorker } from '@/api/regester';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import React, { useState } from 'react';
-import { Image, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, Image, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 const EditProfileScreen = () => {
   const navigation = useNavigation();
@@ -10,55 +11,47 @@ const EditProfileScreen = () => {
   // Initialize with default data or route params if available
   const { data: initialData = {} } = route.params || {};
   const [profile, setProfile] = useState({
-    name: initialData.fullName || 'null',
-    email: initialData.email || 'null',
-    phone: initialData.phoneNumber || 'null',
-    wilaya: initialData.selectedWilaya || 'null',
-    baladiya: initialData.selectedBaladiya || 'null',
-    expertise: initialData.selectedFields?.[0] || 'null',
-    bio: initialData.bio || ''
+    name: initialData.fullName|| 'Hocine Mechkak',
+    email: initialData.email || 'hocine1@example.com',
+    phone: initialData.phone || '0555123456',
+    wilaya: initialData.wilaya || 'Algiers',
+    baladia: initialData.baladia || 'Bab Ezzouar',
+    genre: initialData.genre || 'Electrician',
+    bio: initialData.bio || 'Experienced electrician with over 5 years of work in residential and commercial wiring. Fast, reliable, and certified.'
   });
 
   const [editableBio, setEditableBio] = useState(profile.bio);
+  const [loading, setLoading] = useState(false);
 
-  const handleSave = () => {
-    // Update profile with editable bio
-    setProfile({ ...profile, bio: editableBio });
-    const finalData = {
-      fullName: profile.name,
+  const handleSave = async () => {
+    if (!profile.name || !profile.email || !profile.phone || !profile.wilaya || !profile.baladia || !profile.genre || !editableBio) {
+      Alert.alert('Error', 'Please ensure all fields are filled');
+      return;
+    }
+
+    setLoading(true);
+    const registrationData = {
+      name: profile.name,
       email: profile.email,
-      phoneNumber: profile.phone,
-      selectedWilaya: profile.wilaya,
-      selectedBaladiya: profile.baladiya,
-      selectedFields: [profile.expertise], // Assuming expertise is a single value
-      documents: {
-        idCard: initialData.idCard,
-        freelancerCard: initialData.freelancerCard,
-      },
+      password: profile.password,
+      phone: profile.phone,
+      wilaya: profile.wilaya,
+      baladia: profile.baladia,
+      genre: profile.genre,
       bio: editableBio
     };
-    
-    console.log('Final submission:', finalData);
-    // Placeholder for API call (replace with your backend endpoint)
-    // Example:
-    /*
-    fetch('https://your-backend-api.com/register', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(finalData),
-    })
-      .then(response => response.json())
-      .then(result => {
-        if (response.ok) {
-          navigation.navigate('Home');
-        } else {
-          console.error('Registration failed:', result);
-        }
-      })
-      .catch(error => console.error('Error submitting data:', error));
-    */
-    // After success, navigate to home (uncomment and adjust as needed)
-    // navigation.navigate('Home');
+
+    try {
+      console.log('Registration data:', registrationData);
+      const response = await registerAsWorker(registrationData);
+      console.log('Registration successful:', response);
+      Alert.alert('Registration Successful', 'Your profile has been updated successfully.');
+    } catch (error) {
+      console.error('Registration failed:', error.message);
+      Alert.alert('Registration Failed', error.message || 'An error occurred. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -111,12 +104,12 @@ const EditProfileScreen = () => {
 
           <Text style={styles.infoLabel}>Baladiya</Text>
           <View style={styles.infoBox}>
-            <Text style={styles.infoText}>{profile.baladiya}</Text>
+            <Text style={styles.infoText}>{profile.baladia}</Text>
           </View>
 
           <Text style={styles.infoLabel}>Field of Expertise</Text>
           <View style={styles.infoBox}>
-            <Text style={styles.infoText}>{profile.expertise}</Text>
+            <Text style={styles.infoText}>{profile.genre}</Text>
           </View>
 
           {/* Bio éditable */}
@@ -138,8 +131,13 @@ const EditProfileScreen = () => {
         <TouchableOpacity
           style={styles.saveButton}
           onPress={handleSave}
+          disabled={loading}
         >
-          <Text style={styles.saveButtonText}>Save Changes</Text>
+          {loading ? (
+            <ActivityIndicator size="small" color="white" />
+          ) : (
+            <Text style={styles.saveButtonText}>Save Changes</Text>
+          )}
         </TouchableOpacity>
       </View>
     </SafeAreaView>

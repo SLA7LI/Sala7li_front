@@ -1,26 +1,49 @@
+import { login } from '@/api/loginapi';
 import { Ionicons } from '@expo/vector-icons';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import { useNavigation } from '@react-navigation/native';
-import React from 'react';
-import { SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import React, { useState } from 'react';
+import { ActivityIndicator, Alert, SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+
 const LoginScreen = () => {
-    const navigator = useNavigation()
+  const navigation = useNavigation();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleLogin = async () => {
+    if (!email || !password) {
+      Alert.alert('Error', 'Please enter both email and password');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await login(email, password);
+      // Assuming the API returns a token or user data on success
+      console.log('Login successful:', response);
+      Alert.alert('Login Successful', 'Welcome back!');
+
+    } catch (error) {
+      console.error('Login failed:', error.message);
+      Alert.alert('Login Failed', error.message || 'Invalid credentials. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
-    
       <View style={styles.logoContainer}>
-       <AntDesign name="appstore-o" size={50} color="black" />
+        <AntDesign name="appstore-o" size={50} color="black" />
       </View>
-
 
       <View style={styles.header}>
         <Text style={styles.title}>Welcome back</Text>
         <Text style={styles.subtitle}>Sign in to your account</Text>
       </View>
 
-
       <View style={styles.form}>
-
         <View style={styles.inputContainer}>
           <Ionicons name="mail-outline" size={24} color="#0A77FF" style={styles.icon} />
           <TextInput
@@ -29,9 +52,10 @@ const LoginScreen = () => {
             placeholderTextColor="#999"
             keyboardType="email-address"
             autoCapitalize="none"
+            value={email}
+            onChangeText={setEmail}
           />
         </View>
-
 
         <View style={styles.inputContainer}>
           <Ionicons name="lock-closed-outline" size={24} color="#0A77FF" style={styles.icon} />
@@ -40,27 +64,29 @@ const LoginScreen = () => {
             placeholder="Password"
             placeholderTextColor="#999"
             secureTextEntry
+            value={password}
+            onChangeText={setPassword}
           />
         </View>
-
 
         <TouchableOpacity style={styles.forgotPassword}>
           <Text style={styles.forgotPasswordText}>Forgot your password?</Text>
         </TouchableOpacity>
       </View>
 
-
       <View style={styles.bottomContainer}>
-
-        <TouchableOpacity style={styles.loginButton}>
-          <Text style={styles.loginButtonText}>Sign In</Text>
+        <TouchableOpacity style={styles.loginButton} onPress={handleLogin} disabled={loading}>
+          {loading ? (
+            <ActivityIndicator size="small" color="white" />
+          ) : (
+            <Text style={styles.loginButtonText}>Sign In</Text>
+          )}
         </TouchableOpacity>
 
-
-        <TouchableOpacity style={styles.signUpContainer}onPress={()=>{navigator.navigate('role')}}>
+        <TouchableOpacity style={styles.signUpContainer} onPress={() => navigation.navigate('role')}>
           <Text style={styles.signUpText}>
             Don't have an account?{' '}
-            <Text style={styles.signUpLink }>Sign Up</Text>
+            <Text style={styles.signUpLink}>Sign Up</Text>
           </Text>
         </TouchableOpacity>
       </View>
