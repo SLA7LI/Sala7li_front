@@ -1,16 +1,16 @@
 import { useNavigation } from '@react-navigation/native';
 import React, { useEffect, useState } from 'react';
 import {
-    ActivityIndicator,
-    Alert,
-    Image,
-    SafeAreaView,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Alert,
+  Image,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import Service_client from '../../api/client_service';
 import manage_worker from '../../api/worker';
@@ -18,15 +18,15 @@ import manage_worker from '../../api/worker';
 const WorkersScreen = () => {
   const navigation = useNavigation();
   const [workers, setWorkers] = useState([]);
-  const [serviceRequest, setServiceRequest] = useState(null); // Un seul service request
+  const [serviceRequest, setServiceRequest] = useState(null);
   const [loading, setLoading] = useState(true);
   const [serviceLoading, setServiceLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState('All');
-  const [selectedServiceFilter, setSelectedServiceFilter] = useState('All'); // Filtre pour les services
+  const [selectedServiceFilter, setSelectedServiceFilter] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
 
   const categories = ['All','Electrician', 'Painter', 'Menuiserie', 'Peinture'];
-  const serviceFilters = ['All', 'Done', 'Open']; // Filtres pour les services
+  const serviceFilters = ['All', 'Done', 'Open'];
 
   useEffect(() => {
     fetchWorkers();
@@ -46,7 +46,6 @@ const WorkersScreen = () => {
     }
   };
 
-  // Fonction pour récupérer le service request
   const fetchServiceRequest = async () => {
     try {
       setServiceLoading(true);
@@ -68,13 +67,17 @@ const WorkersScreen = () => {
     return matchesCategory && matchesSearch;
   });
 
-  // Vérifier si le service request correspond au filtre
   const shouldShowServiceRequest = () => {
     if (!serviceRequest) return false;
     if (selectedServiceFilter === 'All') return true;
     if (selectedServiceFilter === 'Done') return serviceRequest.status === 'completed';
     if (selectedServiceFilter === 'Open') return serviceRequest.status === 'open';
     return true;
+  };
+
+  const handleCreateBid = () => {
+    // Navigation vers l'écran de création de bid ou modal
+    Alert.alert('Create Bid', 'Navigate to create bid screen');
   };
 
   const renderStars = (rating) => {
@@ -143,7 +146,7 @@ const WorkersScreen = () => {
     </View>
   );
 
-  // Rendu pour la carte de service request
+  // Rendu pour la carte de service request SANS le bouton Create Bid
   const renderServiceRequestCard = () => {
     if (!serviceRequest) return null;
     
@@ -189,12 +192,6 @@ const WorkersScreen = () => {
           <Text style={styles.serviceLocationText}>
             📍 Lat: {serviceRequest.latitude}, Lng: {serviceRequest.longitude}
           </Text>
-        </View>
-
-        <View style={styles.serviceFooter}>
-          <TouchableOpacity style={styles.createBidButton}>
-            <Text style={styles.createBidText}>+ Create Bid</Text>
-          </TouchableOpacity>
         </View>
       </View>
     );
@@ -292,11 +289,29 @@ const WorkersScreen = () => {
           {filteredWorkers.map(renderWorkerCard)}
         </ScrollView>
 
-        {/* Service Requests Section */}
+        {/* Service Requests Section avec le bouton Create Bid en haut */}
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Service Requests</Text>
           <TouchableOpacity>
             <Text style={styles.viewAllText}>View all</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* NOUVEAU: Bouton Create Bid moderne en haut de la section */}
+        <View style={styles.createBidSection}>
+          <TouchableOpacity style={styles.modernCreateBidButton} onPress={handleCreateBid}>
+            <View style={styles.createBidButtonContent}>
+              <View style={styles.createBidIconContainer}>
+                <Text style={styles.createBidIcon}>✨</Text>
+              </View>
+              <View style={styles.createBidTextContainer}>
+                <Text style={styles.createBidTitle}>Create New Bid</Text>
+                <Text style={styles.createBidSubtitle}>Submit your proposal for this service</Text>
+              </View>
+              <View style={styles.createBidArrow}>
+                <Text style={styles.createBidArrowText}>→</Text>
+              </View>
+            </View>
           </TouchableOpacity>
         </View>
 
@@ -619,7 +634,69 @@ const styles = StyleSheet.create({
     textAlign: 'right',
   },
   
-  // STYLES POUR LES SERVICE REQUESTS
+  // NOUVEAUX STYLES POUR LE BOUTON CREATE BID MODERNE
+  createBidSection: {
+    paddingHorizontal: 20,
+    marginBottom: 20,
+  },
+  modernCreateBidButton: {
+    backgroundColor: 'white',
+    borderRadius: 16,
+    padding: 20,
+    shadowColor: '#007AFF',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 8,
+    borderWidth: 1,
+    borderColor: '#E3F2FD',
+  },
+  createBidButtonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  createBidIconContainer: {
+    width: 50,
+    height: 50,
+    backgroundColor: '#007AFF',
+    borderRadius: 25,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 16,
+  },
+  createBidIcon: {
+    fontSize: 24,
+    color: 'white',
+  },
+  createBidTextContainer: {
+    flex: 1,
+  },
+  createBidTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#1D1D1F',
+    marginBottom: 4,
+  },
+  createBidSubtitle: {
+    fontSize: 14,
+    color: '#8E8E93',
+    lineHeight: 18,
+  },
+  createBidArrow: {
+    width: 32,
+    height: 32,
+    backgroundColor: '#F2F2F7',
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  createBidArrowText: {
+    fontSize: 16,
+    color: '#007AFF',
+    fontWeight: 'bold',
+  },
+  
+  // STYLES POUR LES SERVICE REQUESTS (sans le bouton Create Bid)
   servicesContainer: {
     paddingHorizontal: 20,
     marginBottom: 30,
@@ -708,25 +785,11 @@ const styles = StyleSheet.create({
     color: '#8E8E93',
   },
   serviceLocation: {
-    marginBottom: 12,
+    marginBottom: 0, // Retiré la marge du bas car plus de bouton
   },
   serviceLocationText: {
     fontSize: 12,
     color: '#8E8E93',
-  },
-  serviceFooter: {
-    alignItems: 'flex-end',
-  },
-  createBidButton: {
-    backgroundColor: '#007AFF',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-  },
-  createBidText: {
-    fontSize: 14,
-    color: 'white',
-    fontWeight: '500',
   },
   servicesLoadingContainer: {
     flexDirection: 'row',
