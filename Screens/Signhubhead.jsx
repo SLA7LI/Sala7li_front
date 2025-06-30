@@ -4,12 +4,12 @@ import React, { useState } from 'react';
 import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 const RoleSelectionScreen = () => {
   const [selectedRole, setSelectedRole] = useState(null);
-  const navigator = useNavigation()
+  const navigator = useNavigation();
 
   return (
     <SafeAreaView style={styles.container}>
-          <View style={styles.logoContainer}>
-       <AntDesign name="appstore-o" size={50} color="black" />
+      <View style={styles.logoContainer}>
+        <AntDesign name="appstore-o" size={50} color="black" />
       </View>
 
       {/* Titre et sous-titre */}
@@ -62,10 +62,16 @@ const RoleSelectionScreen = () => {
           style={styles.continueButton}
           disabled={selectedRole === null}
           activeOpacity={selectedRole === null ? 1 : 0.8}
-          onPress={()=>{navigator.navigate('SignUp')}}
+          onPress={() => {
+            const initialData = { role: selectedRole };
+            if (selectedRole === 'jobber') {
+              navigator.navigate('SignUp', { data: initialData });
+            } else {
+              navigator.navigate('NextStep', { data: initialData });
+            }
+          }}
         >
           <Text style={styles.continueButtonText}>Continue</Text>
-          {/* Add navigation logic here, e.g., navigation.navigate('SignUp', { role: selectedRole }) */}
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -82,7 +88,6 @@ const styles = StyleSheet.create({
   logoContainer: {
     alignItems: 'center',
     marginTop: 80,
-  
   },
   logo: {
     width: 50,
@@ -93,14 +98,13 @@ const styles = StyleSheet.create({
   header: {
     alignItems: 'center',
     marginBottom: 40,
-    marginRight:20,
-    marginLeft:20
+    marginRight: 20,
+    marginLeft: 20,
   },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
     textAlign: 'center',
-   
   },
   subtitle: {
     fontSize: 16,

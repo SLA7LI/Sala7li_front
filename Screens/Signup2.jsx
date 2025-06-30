@@ -1,19 +1,25 @@
 import { Ionicons } from '@expo/vector-icons';
-import React from 'react';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import React, { useState } from 'react';
 import { SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 const NextStepScreen = () => {
+  const navigator = useNavigation();
+  const route = useRoute();
+  const { data: initialData = {} } = route.params || {};
+  const [formData, setFormData] = useState({
+    phoneNumber: '',
+    ...initialData,
+  });
+
   return (
     <SafeAreaView style={styles.container}>
-
       <View style={styles.header}>
         <Text style={styles.title}>Your identity</Text>
         <Text style={styles.subtitle}>Helps you discover new people and opportunities</Text>
       </View>
 
-
       <View style={styles.form}>
-
         <View style={styles.inputContainer}>
           <Ionicons name="call-outline" size={24} color="#0A77FF" style={styles.icon} />
           <TextInput
@@ -21,14 +27,23 @@ const NextStepScreen = () => {
             placeholder="Phone Number"
             placeholderTextColor="#999"
             keyboardType="phone-pad"
+            value={formData.phoneNumber}
+            onChangeText={(text) => setFormData({ ...formData, phoneNumber: text })}
           />
         </View>
       </View>
 
-     
       <View style={styles.bottomContainer}>
-
-        <TouchableOpacity style={styles.continueButton}>
+        <TouchableOpacity
+          style={styles.continueButton}
+          onPress={() => {
+            if (formData.role === 'jobber') {
+              navigator.navigate('ExpertiseSelection', { data: formData });
+            } else {
+              navigator.navigate('LocationSelection', { data: formData });
+            }
+          }}
+        >
           <Text style={styles.continueButtonText}>Continue</Text>
         </TouchableOpacity>
       </View>
@@ -87,8 +102,8 @@ const styles = StyleSheet.create({
     padding: 15,
     borderRadius: 15,
     alignItems: 'center',
-    marginLeft:20,
-    marginRight:20
+    marginLeft: 20,
+    marginRight: 20,
   },
   continueButtonText: {
     color: 'white',

@@ -1,26 +1,32 @@
 import { Ionicons } from '@expo/vector-icons';
 import AntDesign from '@expo/vector-icons/AntDesign';
-import { useNavigation } from '@react-navigation/native';
-import React from 'react';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import React, { useState } from 'react';
 import { SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 const SignUpScreen = () => {
-   const navigator = useNavigation()
+  const navigator = useNavigation();
+  const route = useRoute();
+  const { data: initialData = { role: null } } = route.params || {};
+  const [formData, setFormData] = useState({
+    fullName: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+    ...initialData,
+  });
+
   return (
     <SafeAreaView style={styles.container}>
-      
       <View style={styles.logoContainer}>
-       <AntDesign name="appstore-o" size={50} color="black" />
+        <AntDesign name="appstore-o" size={50} color="black" />
       </View>
-
 
       <View style={styles.header}>
         <Text style={styles.title}>Join sala7li</Text>
         <Text style={styles.subtitle}>Discover jobs, and share your resume with 100 million recruiters</Text>
       </View>
 
-
       <View style={styles.form}>
- 
         <View style={styles.inputContainer}>
           <Ionicons name="person-outline" size={24} color="#0A77FF" style={styles.icon} />
           <TextInput
@@ -28,9 +34,10 @@ const SignUpScreen = () => {
             placeholder="Full Name"
             placeholderTextColor="#999"
             autoCapitalize="words"
+            value={formData.fullName}
+            onChangeText={(text) => setFormData({ ...formData, fullName: text })}
           />
         </View>
-
 
         <View style={styles.inputContainer}>
           <Ionicons name="mail-outline" size={24} color="#0A77FF" style={styles.icon} />
@@ -40,9 +47,10 @@ const SignUpScreen = () => {
             placeholderTextColor="#999"
             keyboardType="email-address"
             autoCapitalize="none"
+            value={formData.email}
+            onChangeText={(text) => setFormData({ ...formData, email: text })}
           />
         </View>
-
 
         <View style={styles.inputContainer}>
           <Ionicons name="lock-closed-outline" size={24} color="#0A77FF" style={styles.icon} />
@@ -51,9 +59,10 @@ const SignUpScreen = () => {
             placeholder="Password"
             placeholderTextColor="#999"
             secureTextEntry
+            value={formData.password}
+            onChangeText={(text) => setFormData({ ...formData, password: text })}
           />
         </View>
-
 
         <View style={styles.inputContainer}>
           <Ionicons name="lock-closed-outline" size={24} color="#0A77FF" style={styles.icon} />
@@ -62,19 +71,23 @@ const SignUpScreen = () => {
             placeholder="Confirm Password"
             placeholderTextColor="#999"
             secureTextEntry
+            value={formData.confirmPassword}
+            onChangeText={(text) => setFormData({ ...formData, confirmPassword: text })}
           />
         </View>
       </View>
 
-
       <View style={styles.bottomContainer}>
-
-        <TouchableOpacity style={styles.continueButton} onPress={()=>{navigator.navigate('NextStep')}}>
+        <TouchableOpacity
+          style={styles.continueButton}
+          onPress={() => {
+            navigator.navigate('NextStep', { data: formData });
+          }}
+        >
           <Text style={styles.continueButtonText}>Continue</Text>
         </TouchableOpacity>
 
-
-        <TouchableOpacity style={styles.signInContainer} onPress={()=>{navigator.navigate('Login')}}>
+        <TouchableOpacity style={styles.signInContainer} onPress={() => navigator.navigate('Login')}>
           <Text style={styles.signInText}>
             Already have an account?{' '}
             <Text style={styles.signInLink}>Sign In</Text>

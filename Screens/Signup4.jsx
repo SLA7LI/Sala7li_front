@@ -1,12 +1,15 @@
 import { Picker } from '@react-native-picker/picker';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import React, { useState } from 'react';
 import { SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const LocationSelectionScreen = () => {
-  const [selectedWilaya, setSelectedWilaya] = useState(null);
-  const [selectedBaladiya, setSelectedBaladiya] = useState(null);
+  const navigator = useNavigation();
+  const route = useRoute();
+  const { data: initialData = {} } = route.params || {};
+  const [selectedWilaya, setSelectedWilaya] = useState(initialData.selectedWilaya || null);
+  const [selectedBaladiya, setSelectedBaladiya] = useState(initialData.selectedBaladiya || null);
 
-  // Exemple de données - à remplacer par vos vraies données
   const wilayas = [
     { id: 1, name: 'Alger' },
     { id: 2, name: 'Oran' },
@@ -24,14 +27,13 @@ const LocationSelectionScreen = () => {
     1: ['Alger Centre', 'Sidi Mhamed', 'El Madania', 'Belouizdad'],
     2: ['Oran Centre', 'Es Senia', 'Bir El Djir', 'Aïn El Turk'],
     3: ['Constantine Centre', 'El Khroub', 'Aïn Smara', 'Zighoud Youcef'],
-    // Ajouter les autres wilayas et leurs baladiyas
   };
 
   return (
     <SafeAreaView style={styles.container}>
       {/* Header avec bouton retour */}
       <View style={styles.headerContainer}>
-        <TouchableOpacity style={styles.backButton} onPress={() => {}}>
+        <TouchableOpacity style={styles.backButton} onPress={() => navigator.goBack()}>
           <Text style={styles.backText}>←</Text>
         </TouchableOpacity>
         
@@ -96,6 +98,10 @@ const LocationSelectionScreen = () => {
               : styles.continueButtonActive
           ]}
           disabled={!selectedWilaya || !selectedBaladiya}
+          onPress={() => {
+            const updatedData = { ...initialData, selectedWilaya, selectedBaladiya };
+            navigator.navigate('IdentityVerification', { data: updatedData });
+          }}
         >
           <Text style={[
             styles.continueButtonText,

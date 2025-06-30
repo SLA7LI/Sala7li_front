@@ -1,13 +1,15 @@
 import { Ionicons } from '@expo/vector-icons';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
 import React, { useState } from 'react';
 import { Image, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const IdentityVerificationScreen = () => {
-  const [idCard, setIdCard] = useState(null);
-  const [freelancerCard, setFreelancerCard] = useState(null);
-  console.log(idCard)
-  console.log(freelancerCard)
+  const navigator = useNavigation();
+  const route = useRoute();
+  const { data: initialData = {} } = route.params || {};
+  const [idCard, setIdCard] = useState(initialData.idCard || null);
+  const [freelancerCard, setFreelancerCard] = useState(initialData.freelancerCard || null);
 
   const pickImage = async (type) => {
     let result = await ImagePicker.launchImageLibraryAsync({
@@ -30,7 +32,7 @@ const IdentityVerificationScreen = () => {
     <SafeAreaView style={styles.container}>
       {/* Header avec bouton retour */}
       <View style={styles.headerContainer}>
-        <TouchableOpacity style={styles.backButton} onPress={() => {}}>
+        <TouchableOpacity style={styles.backButton} onPress={() => navigator.goBack()}>
           <Text style={styles.backText}>←</Text>
         </TouchableOpacity>
         
@@ -90,6 +92,11 @@ const IdentityVerificationScreen = () => {
               : styles.continueButtonActive
           ]}
           disabled={!idCard || !freelancerCard}
+          onPress={() => {
+            const updatedData = { ...initialData, idCard, freelancerCard };
+            // Navigate to final screen or submit logic here
+            navigator.navigate('FinalStep', { data: updatedData });
+          }}
         >
           <Text style={[
             styles.continueButtonText,

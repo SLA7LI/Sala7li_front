@@ -1,7 +1,7 @@
 
-import IdentityVerificationScreen from "@/Screens/Signup5"
+import Main from "./main"
 
 export default function App() {
-  return <IdentityVerificationScreen />
+  return <Main />
   
 }

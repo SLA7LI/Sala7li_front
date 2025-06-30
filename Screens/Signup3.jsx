@@ -1,8 +1,12 @@
+import { useNavigation, useRoute } from '@react-navigation/native';
 import React, { useState } from 'react';
 import { SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const ExpertiseSelectionScreen = () => {
-  const [selectedFields, setSelectedFields] = useState([]);
+  const navigator = useNavigation();
+  const route = useRoute();
+  const { data: initialData = {} } = route.params || {};
+  const [selectedFields, setSelectedFields] = useState(initialData.selectedFields || []);
 
   const fields = [
     'Electrician',
@@ -16,7 +20,7 @@ const ExpertiseSelectionScreen = () => {
     'Landscaper',
     'Solar Installer',
     'Appliance Repair',
-    'Handyman'
+    'Handyman',
   ];
 
   const toggleField = (field) => {
@@ -33,7 +37,7 @@ const ExpertiseSelectionScreen = () => {
     <SafeAreaView style={styles.container}>
       {/* Header avec bouton retour */}
       <View style={styles.headerContainer}>
-        <TouchableOpacity style={styles.backButton} onPress={() => {}}>
+        <TouchableOpacity style={styles.backButton} onPress={() => navigator.goBack()}>
           <Text style={styles.backText}>←</Text>
         </TouchableOpacity>
         
@@ -83,6 +87,10 @@ const ExpertiseSelectionScreen = () => {
               : styles.continueButtonActive
           ]}
           disabled={selectedFields.length === 0}
+          onPress={() => {
+            const updatedData = { ...initialData, selectedFields };
+            navigator.navigate('LocationSelection', { data: updatedData });
+          }}
         >
           <Text style={[
             styles.continueButtonText,
@@ -125,7 +133,6 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-
     textAlign: 'center',
     marginBottom: 8,
   },
