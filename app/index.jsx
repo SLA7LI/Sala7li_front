@@ -1,7 +1,7 @@
 
-import RoleSelectionScreen from "@/Screens/Signhubhead"
+import ExpertiseSelectionScreen from "@/Screens/Signup3"
 
 export default function App() {
-  return <RoleSelectionScreen />
+  return <ExpertiseSelectionScreen/>
   
 }

@@ -1,8 +1,10 @@
 import AntDesign from '@expo/vector-icons/AntDesign';
+import { useNavigation } from '@react-navigation/native';
 import React, { useState } from 'react';
 import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 const RoleSelectionScreen = () => {
   const [selectedRole, setSelectedRole] = useState(null);
+  const navigator = useNavigation()
 
   return (
     <SafeAreaView style={styles.container}>
@@ -60,7 +62,7 @@ const RoleSelectionScreen = () => {
           style={styles.continueButton}
           disabled={selectedRole === null}
           activeOpacity={selectedRole === null ? 1 : 0.8}
-          
+          onPress={()=>{navigator.navigate('SignUp')}}
         >
           <Text style={styles.continueButtonText}>Continue</Text>
           {/* Add navigation logic here, e.g., navigation.navigate('SignUp', { role: selectedRole }) */}

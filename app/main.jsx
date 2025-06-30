@@ -1,4 +1,5 @@
 import LoginScreen from "@/Screens/login";
+import RoleSelectionScreen from "@/Screens/Signhubhead";
 import SignUpScreen from "@/Screens/Signup";
 import NextStepScreen from "@/Screens/Signup2";
 import { createStackNavigator } from "@react-navigation/stack";
@@ -14,8 +15,10 @@ export default function Main() {
   screenOptions={{ headerShown: false }}
 >
   <Stack.Screen name="Login" component={LoginScreen} />
+   <Stack.Screen name="role" component={RoleSelectionScreen} />
   <Stack.Screen name="SignUp" component={SignUpScreen} />
   <Stack.Screen name="NextStep" component={NextStepScreen} />
+  
 </Stack.Navigator>
   
   );
