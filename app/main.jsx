@@ -1,4 +1,5 @@
 import LoginScreen from "@/Screens/login";
+import IdentityVerificationScreen2 from "@/Screens/Sginup7";
 import RoleSelectionScreen from "@/Screens/Signhubhead";
 import SignUpScreen from "@/Screens/Signup";
 import NextStepScreen from "@/Screens/Signup2";
@@ -15,7 +16,7 @@ export default function Main() {
   return (
    
  <Stack.Navigator
-  initialRouteName="role"
+  initialRouteName="Login"
   screenOptions={{ headerShown: false }}
 >
   <Stack.Screen name="Login" component={LoginScreen} />
@@ -26,6 +27,7 @@ export default function Main() {
   <Stack.Screen name="LocationSelection" component={LocationSelectionScreen} />
   <Stack.Screen name="IdentityVerification" component={IdentityVerificationScreen} />
   <Stack.Screen name="FinalStep" component={EditProfileScreen} />
+  <Stack.Screen name="IdentityVerification2" component={IdentityVerificationScreen2} />
  
 
   
