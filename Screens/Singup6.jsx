@@ -11,12 +11,13 @@ const EditProfileScreen = () => {
   // Initialize with default data or route params if available
   const { data: initialData = {} } = route.params || {};
   const [profile, setProfile] = useState({
-    name: initialData.fullName|| 'Hocine Mechkak',
+    name: initialData.fullName || 'Hocine Mechkak',
     email: initialData.email || 'hocine1@example.com',
+    password: initialData.password || 'StrongPassword123!', // <-- Ajoute cette ligne
     phone: initialData.phone || '0555123456',
     wilaya: initialData.wilaya || 'Algiers',
     baladia: initialData.baladia || 'Bab Ezzouar',
-    genre: initialData.genre || 'Electrician',
+    genre: initialData.selectedFields || 'Electrician',
     bio: initialData.bio || 'Experienced electrician with over 5 years of work in residential and commercial wiring. Fast, reliable, and certified.'
   });
 
@@ -30,6 +31,7 @@ const EditProfileScreen = () => {
     }
 
     setLoading(true);
+
     const registrationData = {
       name: profile.name,
       email: profile.email,
@@ -37,7 +39,7 @@ const EditProfileScreen = () => {
       phone: profile.phone,
       wilaya: profile.wilaya,
       baladia: profile.baladia,
-      genre: profile.genre,
+      genre: Array.isArray(profile.genre) ? profile.genre[0] : profile.genre,
       bio: editableBio
     };
 

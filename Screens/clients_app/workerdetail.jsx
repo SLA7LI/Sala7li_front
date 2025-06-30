@@ -1,31 +1,35 @@
-import { useNavigation } from '@react-navigation/native'; // <-- Add this import
 import React, { useEffect, useState } from 'react';
 import {
-    ActivityIndicator,
-    Alert,
-    Image,
-    SafeAreaView,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Alert,
+  FlatList,
+  Image,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from 'react-native';
 import manage_worker from '../../api/worker';
 
-const WorkersScreen = () => {
-  const navigation = useNavigation(); // <-- Add this line
+const AllWorkersScreen = ({ navigation, route }) => {
   const [workers, setWorkers] = useState([]);
+  const [filteredWorkers, setFilteredWorkers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState(route?.params?.category || 'All');
 
-  const categories = ['All','Electrician', 'Painter', 'Menuiserie', 'Peinture'];
+  const categories = ['All', 'Plombier', 'Electricien', 'Menuiserie', 'Peintre'];
 
   useEffect(() => {
     fetchWorkers();
   }, []);
+
+  useEffect(() => {
+    applyFilters();
+  }, [workers, searchQuery, selectedCategory]);
 
   const fetchWorkers = async () => {
     try {
@@ -40,13 +44,35 @@ const WorkersScreen = () => {
     }
   };
 
-  const filteredWorkers = workers.filter(worker => {
-    const matchesCategory = selectedCategory === 'All' || 
-      worker.worker?.genre?.toLowerCase().includes(selectedCategory.toLowerCase());
-    const matchesSearch = worker.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      worker.worker?.genre?.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesCategory && matchesSearch;
-  });
+  const applyFilters = () => {
+    let filtered = [...workers];
+
+    // Search filter
+    if (searchQuery) {
+      filtered = filtered.filter(worker =>
+        worker.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        worker.worker?.genre?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        worker.wilaya.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+
+    // Category filter
+    if (selectedCategory !== 'All') {
+      const categoryMap = {
+        'Plombier': 'plumber',
+        'Electricien': 'electrician',
+        'Menuisier': 'carpenter',
+        'Peintre': 'painter'
+      };
+      
+      const mappedCategory = categoryMap[selectedCategory] || selectedCategory.toLowerCase();
+      filtered = filtered.filter(worker =>
+        worker.worker?.genre?.toLowerCase().includes(mappedCategory)
+      );
+    }
+
+    setFilteredWorkers(filtered);
+  };
 
   const renderStars = (rating) => {
     const stars = [];
@@ -60,11 +86,32 @@ const WorkersScreen = () => {
     return stars;
   };
 
-  const renderWorkerCard = (worker) => (
-    <View key={worker.id} style={styles.workerCard}>
+  const getYearsAgo = (createdAt) => {
+    if (!createdAt) return 1;
+    const created = new Date(createdAt);
+    const now = new Date();
+    const years = Math.floor((now.getTime() - created.getTime()) / (1000 * 60 * 60 * 24 * 365));
+    return years || 1;
+  };
+
+  const getGenreInFrench = (genre) => {
+    const genreMap = {
+      'electrician': 'Electricien',
+      'plumber': 'Plombier',
+      'carpenter': 'Menuisier',
+      'painter': 'Peintre'
+    };
+    return genreMap[genre?.toLowerCase()] || genre || 'Général';
+  };
+
+  const renderWorkerCard = ({ item: worker }) => (
+    <TouchableOpacity 
+      style={styles.workerCard}
+      onPress={() => navigation.navigate('WorkerDetails', { worker })}
+    >
       <View style={styles.workerHeader}>
         <View style={styles.profileSection}>
-          <View style={styles.profileImageContainer}>
+          <View style={styles.imageContainer}>
             {worker.worker?.picture ? (
               <Image source={{ uri: worker.worker.picture }} style={styles.profileImage} />
             ) : (
@@ -75,43 +122,41 @@ const WorkersScreen = () => {
               </View>
             )}
           </View>
+          
           <View style={styles.workerInfo}>
             <Text style={styles.workerName}>{worker.name}</Text>
-            <Text style={styles.workerLocation}>{worker.wilaya}, {worker.baladia}</Text>
+            <Text style={styles.workerLocation}>{worker.wilaya} {worker.baladia}</Text>
+            
             <View style={styles.ratingContainer}>
               {renderStars(worker.worker?.rating || 0)}
             </View>
           </View>
         </View>
-        {worker.worker?.verified && (
-          <View style={styles.verifiedBadge}>
-            <Text style={styles.verifiedText}>✓</Text>
-          </View>
-        )}
       </View>
 
       <View style={styles.bioSection}>
         <Text style={styles.bioLabel}>Bio</Text>
-        <Text style={styles.bioText} numberOfLines={3}>
-          {worker.worker?.bio || 'No bio available'}
-        </Text>
-      </View>
-
-      <View style={styles.statsSection}>
-        <Text style={styles.statsText}>
-          <Text style={styles.statsNumber}>{worker.worker?.completedJobs || 0}</Text> services completed
-        </Text>
+        <View style={styles.bioDetails}>
+          <Text style={styles.bioStats}>
+            <Text style={styles.bioStatsHighlight}>
+              {getYearsAgo(worker.worker?.createdAt)} years ago
+            </Text>
+            <Text style={styles.bioStatsSeparator}> • </Text>
+            <Text style={styles.bioStatsNumber}>{worker.worker?.completedJobs || 0}</Text>
+            <Text> services</Text>
+          </Text>
+        </View>
       </View>
 
       <View style={styles.cardFooter}>
         <View style={styles.genreTag}>
-          <Text style={styles.genreText}>{worker.worker?.genre || 'General'}</Text>
+          <Text style={styles.genreText}>{getGenreInFrench(worker.worker?.genre)}</Text>
         </View>
         <TouchableOpacity style={styles.addToBidButton}>
-          <Text style={styles.addToBidText}>+ add to a bid</Text>
+          <Text style={styles.addToBidText}>+ add to a bidding</Text>
         </TouchableOpacity>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 
   if (loading) {
@@ -127,57 +172,39 @@ const WorkersScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        {/* Header */}
-        <View style={styles.header}>
-          <View style={styles.logoContainer}>
-            <View style={styles.logo}>
-              <Text style={styles.logoText}>⚡</Text>
-            </View>
+      {/* Header */}
+      <View style={styles.header}>
+        <View style={styles.logoContainer}>
+          <View style={styles.logo}>
+            <View style={styles.logoIcon} />
           </View>
-          <TouchableOpacity style={styles.notificationButton}>
-            <Text style={styles.notificationIcon}>🔔</Text>
-            <View style={styles.notificationBadge} />
-          </TouchableOpacity>
         </View>
+        <TouchableOpacity style={styles.notificationButton}>
+          <Text style={styles.notificationIcon}>🔔</Text>
+          <View style={styles.notificationBadge} />
+        </TouchableOpacity>
+      </View>
 
-        {/* Title */}
-        <Text style={styles.title}>Find the algiers' most skilled workers</Text>
+      {/* Title */}
+      <Text style={styles.title}>Recommendation</Text>
 
-        {/* Search Bar */}
-        <View style={styles.searchContainer}>
-          <Text style={styles.searchIcon}>🔍</Text>
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Search..."
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-          />
-          <TouchableOpacity style={styles.filterButton}>
-            <Text style={styles.filterIcon}>⚙️</Text>
-          </TouchableOpacity>
-        </View>
+      {/* Search Bar */}
+      <View style={styles.searchContainer}>
+        <Text style={styles.searchIcon}>🔍</Text>
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Search..."
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+        />
+        <TouchableOpacity style={styles.filterButton}>
+          <Text style={styles.filterIcon}>⚙️</Text>
+        </TouchableOpacity>
+      </View>
 
-        {/* Recommendation Section */}
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Recommendation</Text>
-          <TouchableOpacity
-            onPress={() => {
-              if (filteredWorkers.length > 0) {
-                navigation.navigate('WorkerDetails', { worker: filteredWorkers[0] });
-              }
-            }}
-          >
-            <Text style={styles.viewAllText}>View all</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Category Filters */}
-        <ScrollView 
-          horizontal 
-          showsHorizontalScrollIndicator={false}
-          style={styles.categoriesContainer}
-        >
+      {/* Category Filters */}
+      <View style={{ paddingHorizontal: 20, marginBottom: 20 }}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
           {categories.map((category) => (
             <TouchableOpacity
               key={category}
@@ -196,24 +223,25 @@ const WorkersScreen = () => {
             </TouchableOpacity>
           ))}
         </ScrollView>
+      </View>
 
-        {/* Workers Horizontal Scroll */}
-        <ScrollView 
-          horizontal 
-          showsHorizontalScrollIndicator={false}
-          style={styles.workersContainer}
-        >
-          {filteredWorkers.map(renderWorkerCard)}
-        </ScrollView>
+      {/* Workers List */}
+      <FlatList
+        data={filteredWorkers}
+        renderItem={renderWorkerCard}
+        keyExtractor={(item) => item.id.toString()}
+        contentContainerStyle={styles.listContainer}
+        showsVerticalScrollIndicator={false}
+        ListEmptyComponent={
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyText}>No workers found</Text>
+            <Text style={styles.emptySubtext}>Try adjusting your search or filters</Text>
+          </View>
+        }
+      />
 
-     
-    
 
       
-      </ScrollView>
-
-      {/* Bottom Navigation */}
-
     </SafeAreaView>
   );
 };
@@ -232,9 +260,6 @@ const styles = StyleSheet.create({
     marginTop: 10,
     fontSize: 16,
     color: '#666',
-  },
-  scrollView: {
-    flex: 1,
   },
   header: {
     flexDirection: 'row',
@@ -256,10 +281,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  logoText: {
-    color: 'white',
-    fontSize: 24,
-    fontWeight: 'bold',
+  logoIcon: {
+    width: 20,
+    height: 20,
+    backgroundColor: 'white',
+    transform: [{ rotate: '45deg' }],
   },
   notificationButton: {
     position: 'relative',
@@ -277,22 +303,21 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   title: {
-    fontSize: 28,
+    fontSize: 32,
     fontWeight: 'bold',
     color: '#1D1D1F',
     paddingHorizontal: 20,
     marginBottom: 20,
-    lineHeight: 34,
   },
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: 'white',
     marginHorizontal: 20,
-    marginBottom: 30,
-    borderRadius: 12,
-    paddingHorizontal: 15,
-    paddingVertical: 12,
+    marginBottom: 20,
+    borderRadius: 25,
+    paddingHorizontal: 20,
+    paddingVertical: 15,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
@@ -301,7 +326,7 @@ const styles = StyleSheet.create({
   },
   searchIcon: {
     fontSize: 18,
-    marginRight: 10,
+    marginRight: 15,
     color: '#8E8E93',
   },
   searchInput: {
@@ -316,33 +341,17 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: '#8E8E93',
   },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    marginBottom: 15,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#1D1D1F',
-  },
-  viewAllText: {
-    fontSize: 16,
-    color: '#007AFF',
-    fontWeight: '500',
-  },
   categoriesContainer: {
-    paddingLeft: 20,
+    flexDirection: 'row',
+    paddingHorizontal: 20,
     marginBottom: 20,
   },
   categoryButton: {
-    paddingHorizontal: 20,
-    paddingVertical: 10,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
     backgroundColor: 'white',
-    borderRadius: 20,
-    marginRight: 10,
+    borderRadius: 25,
+    marginRight: 12,
     borderWidth: 1,
     borderColor: '#E5E5EA',
   },
@@ -351,23 +360,22 @@ const styles = StyleSheet.create({
     borderColor: '#007AFF',
   },
   categoryText: {
-    fontSize: 14,
+    fontSize: 16,
     color: '#8E8E93',
     fontWeight: '500',
   },
   categoryTextActive: {
     color: 'white',
   },
-  workersContainer: {
-    paddingLeft: 20,
-    marginBottom: 30,
+  listContainer: {
+    paddingHorizontal: 20,
+    paddingBottom: 100,
   },
   workerCard: {
-    width: 280,
     backgroundColor: 'white',
     borderRadius: 16,
-    padding: 16,
-    marginRight: 15,
+    padding: 20,
+    marginBottom: 16,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -375,93 +383,79 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   workerHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 12,
+    marginBottom: 16,
   },
   profileSection: {
     flexDirection: 'row',
-    flex: 1,
   },
-  profileImageContainer: {
-    marginRight: 12,
+  imageContainer: {
+    marginRight: 16,
   },
   profileImage: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
   },
   profileImagePlaceholder: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
     backgroundColor: '#007AFF',
     justifyContent: 'center',
     alignItems: 'center',
   },
   profileImageText: {
     color: 'white',
-    fontSize: 16,
+    fontSize: 20,
     fontWeight: 'bold',
   },
   workerInfo: {
     flex: 1,
+    justifyContent: 'center',
   },
   workerName: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '600',
     color: '#1D1D1F',
-    marginBottom: 2,
+    marginBottom: 4,
   },
   workerLocation: {
     fontSize: 14,
     color: '#8E8E93',
-    marginBottom: 4,
+    marginBottom: 8,
   },
   ratingContainer: {
     flexDirection: 'row',
   },
   star: {
-    fontSize: 14,
-    marginRight: 1,
-  },
-  verifiedBadge: {
-    width: 20,
-    height: 20,
-    backgroundColor: '#34C759',
-    borderRadius: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  verifiedText: {
-    color: 'white',
-    fontSize: 12,
-    fontWeight: 'bold',
+    fontSize: 16,
+    marginRight: 2,
   },
   bioSection: {
-    marginBottom: 12,
-  },
-  bioLabel: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#1D1D1F',
-    marginBottom: 4,
-  },
-  bioText: {
-    fontSize: 14,
-    color: '#8E8E93',
-    lineHeight: 18,
-  },
-  statsSection: {
     marginBottom: 16,
   },
-  statsText: {
+  bioLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1D1D1F',
+    marginBottom: 8,
+  },
+  bioDetails: {
+    marginBottom: 4,
+  },
+  bioStats: {
     fontSize: 14,
     color: '#8E8E93',
   },
-  statsNumber: {
+  bioStatsHighlight: {
     color: '#007AFF',
+    fontWeight: '500',
+  },
+  bioStatsSeparator: {
+    color: '#8E8E93',
+  },
+  bioStatsNumber: {
+    color: '#1D1D1F',
     fontWeight: '600',
   },
   cardFooter: {
@@ -471,37 +465,60 @@ const styles = StyleSheet.create({
   },
   genreTag: {
     backgroundColor: '#F2F2F7',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
   },
   genreText: {
-    fontSize: 12,
+    fontSize: 14,
     color: '#8E8E93',
     fontWeight: '500',
   },
   addToBidButton: {
     flex: 1,
-    marginLeft: 10,
+    alignItems: 'flex-end',
   },
   addToBidText: {
     fontSize: 14,
     color: '#007AFF',
     fontWeight: '500',
-    textAlign: 'right',
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 60,
+  },
+  emptyText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#8E8E93',
+    marginBottom: 8,
+  },
+  emptySubtext: {
+    fontSize: 14,
+    color: '#8E8E93',
   },
   bottomNav: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
     flexDirection: 'row',
     backgroundColor: 'white',
-    paddingVertical: 8,
+    paddingVertical: 12,
     paddingHorizontal: 20,
     borderTopWidth: 1,
     borderTopColor: '#E5E5EA',
+    paddingBottom: 34, // For iPhone safe area
   },
   navItem: {
     flex: 1,
     alignItems: 'center',
     paddingVertical: 8,
+  },
+  navItemActive: {
+    // Active state styling
   },
   navIcon: {
     fontSize: 20,
@@ -521,4 +538,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default WorkersScreen;
+export default AllWorkersScreen;
