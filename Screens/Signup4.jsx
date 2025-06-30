@@ -100,7 +100,11 @@ const LocationSelectionScreen = () => {
           disabled={!selectedWilaya || !selectedBaladiya}
           onPress={() => {
             const updatedData = { ...initialData, selectedWilaya, selectedBaladiya };
-            navigator.navigate('IdentityVerification', { data: updatedData });
+            if (initialData.role === 'client') {
+              navigator.navigate('IdentityVerification2', { data: updatedData });
+            } else {
+              navigator.navigate('IdentityVerification', { data: updatedData });
+            }
           }}
         >
           <Text style={[
