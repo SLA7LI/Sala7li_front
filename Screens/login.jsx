@@ -1,6 +1,7 @@
 import { login } from '@/api/loginapi';
 import { Ionicons } from '@expo/vector-icons';
 import AntDesign from '@expo/vector-icons/AntDesign';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 import React, { useState } from 'react';
 import { ActivityIndicator, Alert, SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
@@ -20,10 +21,13 @@ const LoginScreen = () => {
     setLoading(true);
     try {
       const response = await login(email, password);
-      // Assuming the API returns a token or user data on success
+      // Stocke le token dans le storage
+      if (response.accessToken) {
+        await AsyncStorage.setItem('accessToken', response.accessToken);
+      }
       console.log('Login successful:', response);
       Alert.alert('Login Successful', 'Welcome back!');
-
+      navigation.replace('Home'); // <-- Ajoute cette ligne pour naviguer vers Home
     } catch (error) {
       console.error('Login failed:', error.message);
       Alert.alert('Login Failed', error.message || 'Invalid credentials. Please try again.');
