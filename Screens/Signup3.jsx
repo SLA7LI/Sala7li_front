@@ -23,7 +23,7 @@ const ExpertiseSelectionScreen = () => {
     if (selectedFields.includes(field)) {
       setSelectedFields(selectedFields.filter(item => item !== field));
     } else {
-      if (selectedFields.length < 1) { // Limite à 1 sélection comme indiqué dans le sous-titre
+      if (selectedFields.length < 1) {
         setSelectedFields([...selectedFields, field]);
       }
     }
@@ -78,11 +78,20 @@ const ExpertiseSelectionScreen = () => {
         <TouchableOpacity
           style={[
             styles.continueButton,
-            selectedFields.length === 0 && styles.continueButtonDisabled
+            selectedFields.length === 0 
+              ? styles.continueButtonInactive 
+              : styles.continueButtonActive
           ]}
           disabled={selectedFields.length === 0}
         >
-          <Text style={styles.continueButtonText}>Continue</Text>
+          <Text style={[
+            styles.continueButtonText,
+            selectedFields.length === 0 
+              ? styles.continueButtonTextInactive 
+              : styles.continueButtonTextActive
+          ]}>
+            Continue
+          </Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -116,7 +125,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#0A77FF',
+
     textAlign: 'center',
     marginBottom: 8,
   },
@@ -183,19 +192,29 @@ const styles = StyleSheet.create({
     borderTopColor: '#EEE',
   },
   continueButton: {
-    backgroundColor: '#0A77FF',
     padding: 16,
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 2,
   },
-  continueButtonDisabled: {
-    backgroundColor: '#CCC',
+  continueButtonInactive: {
+    backgroundColor: 'white',
+    borderColor: '#0A77FF',
+  },
+  continueButtonActive: {
+    backgroundColor: '#0A77FF',
+    borderColor: '#0A77FF',
   },
   continueButtonText: {
-    color: 'white',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  continueButtonTextInactive: {
+    color: '#0A77FF',
+  },
+  continueButtonTextActive: {
+    color: 'white',
   },
 });
 
