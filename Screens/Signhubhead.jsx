@@ -67,7 +67,7 @@ const RoleSelectionScreen = () => {
             if (selectedRole === 'jobber') {
               navigator.navigate('SignUp', { data: initialData });
             } else {
-              navigator.navigate('NextStep', { data: initialData });
+              navigator.navigate('SignUp', { data: initialData });
             }
           }}
         >
