@@ -1,16 +1,16 @@
 import { Picker } from '@react-native-picker/picker';
 import React, { useState } from 'react';
 import {
-    ActivityIndicator,
-    Alert,
-    Dimensions,
-    Modal,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Alert,
+  Dimensions,
+  Modal,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
 import Service_client from '../api/client_service';
@@ -40,9 +40,9 @@ const CreateServiceRequestModal = ({ visible, onClose, onSuccess }) => {
   ];
 
   const urgencyLevels = [
-    { label: 'Normal', value: 'normal' },
-    { label: 'Urgent', value: 'urgent' },
-    { label: 'Emergency', value: 'emergency' },
+    { label: 'urgent', value: 'urgent' },
+    { label: 'normal', value: 'normal' },
+      { label: 'normal', value: 'normal' },
   ];
 
   const handleInputChange = (field, value) => {

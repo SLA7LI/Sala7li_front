@@ -16,18 +16,21 @@ import {
 } from "react-native"
 import Service_client from "../../api/client_service"
 import manage_worker from "../../api/worker"
+import InviteWorkerModal from "../../components/invitemodal"
 import CreateServiceRequestModal from "../../components/modal"
 
 const WorkersScreen = () => {
   const navigation = useNavigation()
   const [workers, setWorkers] = useState([])
-  const [serviceRequests, setServiceRequests] = useState([]) // Changé pour un tableau
+  const [serviceRequests, setServiceRequests] = useState([])
   const [loading, setLoading] = useState(true)
   const [serviceLoading, setServiceLoading] = useState(true)
   const [selectedCategory, setSelectedCategory] = useState("All")
   const [selectedServiceFilter, setSelectedServiceFilter] = useState("All")
   const [searchQuery, setSearchQuery] = useState("")
   const [showCreateModal, setShowCreateModal] = useState(false)
+  const [showInviteModal, setShowInviteModal] = useState(false)
+  const [selectedWorker, setSelectedWorker] = useState(null)
 
   const categories = ["All", "Electrician", "Painter", "Menuiserie", "Peinture"]
   const serviceFilters = ["All", "Done", "Open"]
@@ -54,7 +57,7 @@ const WorkersScreen = () => {
     try {
       setServiceLoading(true)
       const response = await Service_client.getServiceRequestsClient()
-      setServiceRequests(response.data || []) // Maintenant un tableau
+      setServiceRequests(response.data || [])
     } catch (error) {
       console.error("Error fetching service requests:", error)
       Alert.alert("Error", "Failed to load service requests")
@@ -93,6 +96,31 @@ const WorkersScreen = () => {
 
   const handleViewAllServices = () => {
     navigation.navigate("AllServiceRequests")
+  }
+
+  const handleAddToBid = (worker) => {
+    // Vérifier s'il y a des service requests ouverts
+    const openRequests = serviceRequests.filter((request) => request.status === "open")
+
+    if (openRequests.length === 0) {
+      Alert.alert(
+        "No Open Service Requests",
+        "You need to have open service requests to invite workers. Would you like to create one?",
+        [
+          { text: "Cancel", style: "cancel" },
+          { text: "Create Request", onPress: () => setShowCreateModal(true) },
+        ],
+      )
+      return
+    }
+
+    setSelectedWorker(worker)
+    setShowInviteModal(true)
+  }
+
+  const handleInviteSuccess = () => {
+    // Optionnel: rafraîchir les données ou afficher une notification
+    console.log("Worker invited successfully!")
   }
 
   const renderStars = (rating) => {
@@ -158,7 +186,7 @@ const WorkersScreen = () => {
         <View style={styles.genreTag}>
           <Text style={styles.genreText}>{worker.worker?.genre || "General"}</Text>
         </View>
-        <TouchableOpacity style={styles.addToBidButton}>
+        <TouchableOpacity style={styles.addToBidButton} onPress={() => handleAddToBid(worker)}>
           <Text style={styles.addToBidText}>+ add to a bid</Text>
         </TouchableOpacity>
       </View>
@@ -363,6 +391,18 @@ const WorkersScreen = () => {
         visible={showCreateModal}
         onClose={() => setShowCreateModal(false)}
         onSuccess={handleModalSuccess}
+      />
+
+      {/* Modal pour inviter un worker */}
+      <InviteWorkerModal
+        visible={showInviteModal}
+        onClose={() => {
+          setShowInviteModal(false)
+          setSelectedWorker(null)
+        }}
+        worker={selectedWorker}
+        serviceRequests={serviceRequests}
+        onSuccess={handleInviteSuccess}
       />
     </SafeAreaView>
   )

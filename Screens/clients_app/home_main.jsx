@@ -4,6 +4,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import * as React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import AllServiceRequestsScreen from './bid';
+import WorkersMapScreen from './explore';
 import WorkersScreen from './home';
 import WorkerDetailsScreen from './workerdetail';
 
@@ -66,7 +67,7 @@ export default function Home_main() {
       })}
     >
       <Tab.Screen name="Home" component={HomeScreen} />
-      <Tab.Screen name="Explore" component={ExploreScreen} />
+      <Tab.Screen name="Explore" component={WorkersMapScreen} />
       <Tab.Screen name="Bid" component={AllServiceRequestsScreen} />
       <Tab.Screen name="Profile" component={ProfileScreen} />
     </Tab.Navigator>
