@@ -32,15 +32,16 @@ const FinalStepScreen = () => {
 
     setLoading(true);
 
-    const registrationData = {
-      name: profile.name,
-      email: profile.email,
-      password: profile.password,
-      phone: profile.phone,
-      wilaya: profile.wilaya,
-      baladia: profile.baladia,
-      ...(profile.role === 'jobber' && { genre: profile.genre }),
-    };
+  const registrationData = {
+  name: profile.name,
+  email: profile.email,
+  password: profile.password,
+  phone: profile.phone,
+  wilaya: profile.wilaya,
+  baladia: profile.baladia,
+  ...(profile.role === 'jobber' && { genre: profile.genre }),
+  ...(profile.role === 'jobber' && { bio: editableBio }), // Ajoute la bio si jobber
+};
 
     try {
       let response;
@@ -56,7 +57,7 @@ const FinalStepScreen = () => {
       if (profile.role === 'jobber') {
         navigation.replace('HomeWorker');
       } else {
-        navigation.replace('Home'); // nom de ta page client
+        navigation.replace('Home'); 
       }
     } catch (error) {
       console.error('Registration failed:', error.message);
