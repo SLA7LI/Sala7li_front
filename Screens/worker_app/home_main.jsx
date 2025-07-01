@@ -3,6 +3,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import * as React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import WorkerHomeScreen from './home';
 
 // Dummy screens
 const WorkersScreen = () => (
@@ -40,7 +41,7 @@ const HomeStack = createStackNavigator();
 
 const HomeScreen = () => (
   <HomeStack.Navigator screenOptions={{ headerShown: false }}>
-    <HomeStack.Screen name="Workers" component={WorkersScreen} />
+    <HomeStack.Screen name="Home" component={HomeScreen} />
     <HomeStack.Screen name="WorkerDetails" component={WorkerDetailsScreen} />
   </HomeStack.Navigator>
 );
@@ -79,7 +80,7 @@ export default function Home_main_Worker() {
         headerShown: false,
       })}
     >
-      <Tab.Screen name="Home" component={HomeScreen} />
+      <Tab.Screen name="Home" component={WorkerHomeScreen} />
       <Tab.Screen name="Explore" component={WorkersMapScreen} />
       <Tab.Screen name="Bid" component={AllServiceRequestsScreen} />
       <Tab.Screen name="Profile" component={ProfileScreen} />

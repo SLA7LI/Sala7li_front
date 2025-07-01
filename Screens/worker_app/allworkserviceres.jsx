@@ -5,24 +5,26 @@ import { useEffect, useState } from "react"
 import {
     ActivityIndicator,
     Alert,
+    FlatList,
     SafeAreaView,
-    ScrollView,
     StyleSheet,
     Text,
     TextInput,
     TouchableOpacity,
     View,
 } from "react-native"
-import { getWorkerServiceRequests } from "../../api/get_services_request_by worker"
+import { getWorkerServiceRequests } from "../..//api/get_services_request_by worker"
 
-const WorkerHomeScreen = () => {
+const AllWorkerServiceRequestsScreen = () => {
   const navigation = useNavigation()
   const [serviceRequests, setServiceRequests] = useState([])
   const [loading, setLoading] = useState(true)
   const [selectedFilter, setSelectedFilter] = useState("All")
+  const [selectedCategory, setSelectedCategory] = useState("All")
   const [searchQuery, setSearchQuery] = useState("")
 
   const statusFilters = ["All", "Pending", "Bidding", "Accepted", "Completed"]
+  const categories = ["All", "Plumber", "Electrician", "Painter", "Carpenter", "Mechanic", "Cleaner"]
 
   useEffect(() => {
     fetchServiceRequests()
@@ -41,7 +43,6 @@ const WorkerHomeScreen = () => {
     }
   }
 
-  // Filtrer les service requests
   const filteredRequests = serviceRequests.filter((request) => {
     const matchesStatus =
       selectedFilter === "All" ||
@@ -50,19 +51,16 @@ const WorkerHomeScreen = () => {
       (selectedFilter === "Accepted" && request.status === "accepted") ||
       (selectedFilter === "Completed" && request.clientCompleted && request.workerCompleted)
 
+    const matchesCategory =
+      selectedCategory === "All" ||
+      request.serviceRequest.category.toLowerCase().includes(selectedCategory.toLowerCase())
+
     const matchesSearch =
       request.serviceRequest.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
       request.serviceRequest.description.toLowerCase().includes(searchQuery.toLowerCase())
 
-    return matchesStatus && matchesSearch
+    return matchesStatus && matchesCategory && matchesSearch
   })
-
-  // Afficher seulement les 2 premières recommandations
-  const displayedRequests = filteredRequests.slice(0, 2)
-
-  const handleViewAllRequests = () => {
-    navigation.navigate("WorkerDetails")
-  }
 
   const getStatusColor = (status, clientCompleted, workerCompleted) => {
     if (clientCompleted && workerCompleted) {
@@ -115,12 +113,12 @@ const WorkerHomeScreen = () => {
     }
   }
 
-  const renderServiceRequestCard = (request) => {
+  const renderServiceRequestCard = ({ item: request }) => {
     const statusInfo = getStatusColor(request.status, request.clientCompleted, request.workerCompleted)
     const serviceRequest = request.serviceRequest
 
     return (
-      <View key={request.serviceRequestId} style={styles.serviceCard}>
+      <View style={styles.serviceCard}>
         <View style={styles.serviceHeader}>
           <View style={styles.serviceInfo}>
             <Text style={styles.serviceCategory}>{serviceRequest.category}</Text>
@@ -155,16 +153,34 @@ const WorkerHomeScreen = () => {
           <View style={styles.serviceSource}>
             <Text style={styles.serviceSourceText}>Source: {request.source}</Text>
           </View>
-          <TouchableOpacity
-            style={styles.actionButton}
-            onPress={() => navigation.navigate("ServiceRequestDetails", { request })}
-          >
-            <Text style={styles.actionButtonText}>View Details</Text>
-          </TouchableOpacity>
+          <View style={styles.serviceActions}>
+            <TouchableOpacity
+              style={styles.viewDetailsButton}
+              onPress={() => navigation.navigate("ServiceRequestDetails", { request })}
+            >
+              <Text style={styles.viewDetailsText}>View Details</Text>
+            </TouchableOpacity>
+            {request.status === "pending" && (
+              <TouchableOpacity style={styles.bidButton}>
+                <Text style={styles.bidButtonText}>Place Bid</Text>
+              </TouchableOpacity>
+            )}
+          </View>
         </View>
       </View>
     )
   }
+
+  const renderEmptyState = () => (
+    <View style={styles.emptyContainer}>
+      <Text style={styles.emptyTitle}>No Service Requests Found</Text>
+      <Text style={styles.emptySubtitle}>
+        {searchQuery || selectedFilter !== "All" || selectedCategory !== "All"
+          ? "Try adjusting your filters or search terms"
+          : "You haven't received any service requests yet"}
+      </Text>
+    </View>
+  )
 
   if (loading) {
     return (
@@ -179,86 +195,78 @@ const WorkerHomeScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-     
-  <View style={styles.searchContainer}>
-          <Text style={styles.searchIcon}>🔍</Text>
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Search service requests..."
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-          />
-          
+      {/* Header */}
+      <View style={styles.header}>
+        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+          <Text style={styles.backButtonText}>←</Text>
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>All Service Requests</Text>
+        <View style={styles.headerRight}>
+          <Text style={styles.requestCount}>{filteredRequests.length}</Text>
         </View>
+      </View>
 
+      {/* Search Bar */}
+      <View style={styles.searchContainer}>
+        <Text style={styles.searchIcon}>🔍</Text>
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Search requests..."
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+        />
+      </View>
 
-        {/* Title */}
-        <Text style={styles.title}>Your service opportunities</Text>
-
-
-      
-
-        {/* Recommendations Section */}
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Recommendations</Text>
-          <TouchableOpacity onPress={handleViewAllRequests}>
-            <Text style={styles.viewAllText}>View all ({serviceRequests.length})</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Status Filters */}
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoriesContainer}>
+      {/* Status Filters */}
+      <View style={styles.filtersSection}>
+        <Text style={styles.filterLabel}>Status:</Text>
+        <View style={styles.filtersContainer}>
           {statusFilters.map((filter) => (
             <TouchableOpacity
               key={filter}
-              style={[styles.categoryButton, selectedFilter === filter && styles.categoryButtonActive]}
+              style={[styles.filterButton, selectedFilter === filter && styles.filterButtonActive]}
               onPress={() => setSelectedFilter(filter)}
             >
-              <Text style={[styles.categoryText, selectedFilter === filter && styles.categoryTextActive]}>
-                {filter}
+              <Text style={[styles.filterText, selectedFilter === filter && styles.filterTextActive]}>{filter}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </View>
+
+      {/* Category Filters */}
+      <View style={styles.filtersSection}>
+        <Text style={styles.filterLabel}>Category:</Text>
+        <View style={styles.filtersContainer}>
+          {categories.map((category) => (
+            <TouchableOpacity
+              key={category}
+              style={[styles.filterButton, selectedCategory === category && styles.filterButtonActive]}
+              onPress={() => setSelectedCategory(category)}
+            >
+              <Text style={[styles.filterText, selectedCategory === category && styles.filterTextActive]}>
+                {category}
               </Text>
             </TouchableOpacity>
           ))}
-        </ScrollView>
-
-        {/* Service Requests Display */}
-        <View style={styles.servicesContainer}>
-          {displayedRequests.length > 0 ? (
-            displayedRequests.map(renderServiceRequestCard)
-          ) : (
-            <View style={styles.emptyContainer}>
-              <Text style={styles.emptyTitle}>No Service Requests</Text>
-              <Text style={styles.emptySubtitle}>
-                {searchQuery || selectedFilter !== "All"
-                  ? "Try adjusting your filters"
-                  : "You haven't received any service requests yet"}
-              </Text>
-            </View>
-          )}
         </View>
+      </View>
 
-        {/* Quick Stats */}
-        <View style={styles.statsSection}>
-          <Text style={styles.statsTitle}>Quick Stats</Text>
-          <View style={styles.statsContainer}>
-            <View style={styles.statCard}>
-              <Text style={styles.statNumber}>{serviceRequests.length}</Text>
-              <Text style={styles.statLabel}>Total Requests</Text>
-            </View>
-            <View style={styles.statCard}>
-              <Text style={styles.statNumber}>{serviceRequests.filter((r) => r.status === "pending").length}</Text>
-              <Text style={styles.statLabel}>Pending</Text>
-            </View>
-            <View style={styles.statCard}>
-              <Text style={styles.statNumber}>
-                {serviceRequests.filter((r) => r.clientCompleted && r.workerCompleted).length}
-              </Text>
-              <Text style={styles.statLabel}>Completed</Text>
-            </View>
-          </View>
-        </View>
-      </ScrollView>
+      {/* Results Count */}
+      <View style={styles.resultsHeader}>
+        <Text style={styles.resultsCount}>
+          {filteredRequests.length} request{filteredRequests.length !== 1 ? "s" : ""} found
+        </Text>
+      </View>
+
+      {/* Service Requests List */}
+      <FlatList
+        data={filteredRequests}
+        renderItem={renderServiceRequestCard}
+        keyExtractor={(item) => item.serviceRequestId.toString()}
+        contentContainerStyle={styles.listContainer}
+        showsVerticalScrollIndicator={false}
+        ListEmptyComponent={renderEmptyState}
+      />
     </SafeAreaView>
   )
 }
@@ -278,63 +286,49 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#666",
   },
-  scrollView: {
-    flex: 1,
-  },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     paddingHorizontal: 20,
-    paddingTop: 10,
-    paddingBottom: 20,
+    paddingVertical: 16,
+    backgroundColor: "white",
+    borderBottomWidth: 1,
+    borderBottomColor: "#E5E5EA",
   },
-  logoContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  logo: {
-    width: 50,
-    height: 50,
-    backgroundColor: "#007AFF",
-    borderRadius: 12,
+  backButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "#F2F2F7",
     justifyContent: "center",
     alignItems: "center",
   },
-  logoText: {
-    color: "white",
-    fontSize: 24,
+  backButtonText: {
+    fontSize: 20,
+    color: "#007AFF",
     fontWeight: "bold",
   },
-  notificationButton: {
-    position: "relative",
-  },
-  notificationIcon: {
-    fontSize: 24,
-  },
-  notificationBadge: {
-    position: "absolute",
-    top: 0,
-    right: 0,
-    width: 8,
-    height: 8,
-    backgroundColor: "#FF3B30",
-    borderRadius: 4,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: "bold",
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: "600",
     color: "#1D1D1F",
-    paddingHorizontal: 20,
-    marginBottom: 20,
-    lineHeight: 34,
+  },
+  headerRight: {
+    width: 40,
+    alignItems: "center",
+  },
+  requestCount: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#007AFF",
   },
   searchContainer: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "white",
     marginHorizontal: 20,
-    marginBottom: 30,
+    marginVertical: 16,
     borderRadius: 12,
     paddingHorizontal: 15,
     paddingVertical: 12,
@@ -343,7 +337,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 3,
     elevation: 2,
-    marginTop: 20,
   },
   searchIcon: {
     fontSize: 18,
@@ -355,64 +348,60 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#1D1D1F",
   },
-  filterButton: {
-    padding: 5,
-  },
-  filterIcon: {
-    fontSize: 18,
-    color: "#8E8E93",
-  },
-  sectionHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+  filtersSection: {
     paddingHorizontal: 20,
-    marginBottom: 15,
+    marginBottom: 16,
   },
-  sectionTitle: {
-    fontSize: 20,
+  filterLabel: {
+    fontSize: 14,
     fontWeight: "600",
     color: "#1D1D1F",
+    marginBottom: 8,
   },
-  viewAllText: {
-    fontSize: 16,
-    color: "#007AFF",
-    fontWeight: "500",
+  filtersContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
   },
-  categoriesContainer: {
-    paddingLeft: 20,
-    marginBottom: 20,
-  },
-  categoryButton: {
-    paddingHorizontal: 20,
-    paddingVertical: 10,
+  filterButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
     backgroundColor: "white",
-    borderRadius: 20,
-    marginRight: 10,
+    borderRadius: 16,
+    marginRight: 8,
+    marginBottom: 8,
     borderWidth: 1,
     borderColor: "#E5E5EA",
   },
-  categoryButtonActive: {
+  filterButtonActive: {
     backgroundColor: "#007AFF",
     borderColor: "#007AFF",
   },
-  categoryText: {
+  filterText: {
     fontSize: 14,
     color: "#8E8E93",
     fontWeight: "500",
   },
-  categoryTextActive: {
+  filterTextActive: {
     color: "white",
   },
-  servicesContainer: {
+  resultsHeader: {
     paddingHorizontal: 20,
-    marginBottom: 30,
+    marginBottom: 16,
+  },
+  resultsCount: {
+    fontSize: 14,
+    color: "#8E8E93",
+    fontWeight: "500",
+  },
+  listContainer: {
+    paddingHorizontal: 20,
+    paddingBottom: 20,
   },
   serviceCard: {
     backgroundColor: "white",
     borderRadius: 16,
     padding: 16,
-    marginBottom: 15,
+    marginBottom: 16,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -482,85 +471,71 @@ const styles = StyleSheet.create({
     color: "#8E8E93",
   },
   serviceFooter: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    flexDirection: "column",
+    gap: 8,
   },
   serviceSource: {
     backgroundColor: "#F2F2F7",
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 8,
+    alignSelf: "flex-start",
   },
   serviceSourceText: {
     fontSize: 12,
     color: "#8E8E93",
     textTransform: "capitalize",
   },
-  actionButton: {
-    backgroundColor: "#007AFF",
-    paddingHorizontal: 16,
+  serviceActions: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  viewDetailsButton: {
+    flex: 1,
+    backgroundColor: "#F2F2F7",
     paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    marginRight: 8,
+  },
+  viewDetailsText: {
+    fontSize: 14,
+    color: "#007AFF",
+    fontWeight: "500",
+    textAlign: "center",
+  },
+  bidButton: {
+    backgroundColor: "#007AFF",
+    paddingVertical: 8,
+    paddingHorizontal: 16,
     borderRadius: 8,
   },
-  actionButtonText: {
+  bidButtonText: {
     fontSize: 14,
     color: "white",
     fontWeight: "500",
   },
   emptyContainer: {
+    flex: 1,
+    justifyContent: "center",
     alignItems: "center",
-    paddingVertical: 40,
+    paddingHorizontal: 40,
+    paddingVertical: 60,
   },
   emptyTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#1D1D1F",
-    marginBottom: 8,
-  },
-  emptySubtitle: {
-    fontSize: 14,
-    color: "#8E8E93",
-    textAlign: "center",
-  },
-  statsSection: {
-    paddingHorizontal: 20,
-    marginBottom: 30,
-  },
-  statsTitle: {
     fontSize: 20,
     fontWeight: "600",
     color: "#1D1D1F",
-    marginBottom: 15,
+    marginBottom: 8,
+    textAlign: "center",
   },
-  statsContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  statCard: {
-    flex: 1,
-    backgroundColor: "white",
-    borderRadius: 12,
-    padding: 16,
-    marginHorizontal: 4,
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 2,
-  },
-  statNumber: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#007AFF",
-    marginBottom: 4,
-  },
-  statLabel: {
-    fontSize: 12,
+  emptySubtitle: {
+    fontSize: 16,
     color: "#8E8E93",
     textAlign: "center",
+    lineHeight: 22,
   },
 })
 
-export default WorkerHomeScreen
+export default AllWorkerServiceRequestsScreen
