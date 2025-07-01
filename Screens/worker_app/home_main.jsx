@@ -83,7 +83,7 @@ export default function Home_main_Worker() {
     >
       <Tab.Screen name="Home" component={WorkerHomeScreen} />
       <Tab.Screen name="Explore" component={ServiceRequestsMapScreen} />
-      <Tab.Screen name="Bid" component={AllServiceRequestsScreen} />
+
       <Tab.Screen name="Profile" component={ProfileScreen} />
     </Tab.Navigator>
   );

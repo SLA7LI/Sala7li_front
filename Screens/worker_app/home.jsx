@@ -3,15 +3,15 @@
 import { useNavigation } from "@react-navigation/native"
 import { useEffect, useState } from "react"
 import {
-    ActivityIndicator,
-    Alert,
-    SafeAreaView,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Alert,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native"
 import { getWorkerServiceRequests } from "../../api/get_services_request_by worker"
 import { joinBidding } from "../../api/joinBinding"
@@ -259,18 +259,7 @@ const WorkerHomeScreen = () => {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        {/* Header */}
-        <View style={styles.header}>
-          <View style={styles.logoContainer}>
-            <View style={styles.logo}>
-              <Text style={styles.logoText}>🔧</Text>
-            </View>
-          </View>
-          <TouchableOpacity style={styles.notificationButton}>
-            <Text style={styles.notificationIcon}>🔔</Text>
-            <View style={styles.notificationBadge} />
-          </TouchableOpacity>
-        </View>
+   
 
         {/* Search Bar */}
         <View style={styles.searchContainer}>
