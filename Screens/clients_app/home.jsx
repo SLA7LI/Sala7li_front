@@ -16,6 +16,7 @@ import {
 } from "react-native"
 import Service_client from "../../api/client_service"
 import manage_worker from "../../api/worker"
+import ClientLobbyModal from "../../components/clientlobymodal"
 import InviteWorkerModal from "../../components/invitemodal"
 import CreateServiceRequestModal from "../../components/modal"
 
@@ -30,7 +31,9 @@ const WorkersScreen = () => {
   const [searchQuery, setSearchQuery] = useState("")
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [showInviteModal, setShowInviteModal] = useState(false)
+  const [showClientLobby, setShowClientLobby] = useState(false)
   const [selectedWorker, setSelectedWorker] = useState(null)
+  const [selectedServiceRequest, setSelectedServiceRequest] = useState(null)
 
   const categories = ["All", "Electrician", "Painter", "Menuiserie", "Peinture"]
   const serviceFilters = ["All", "Done", "Open"]
@@ -121,6 +124,12 @@ const WorkersScreen = () => {
   const handleInviteSuccess = () => {
     // Optionnel: rafraîchir les données ou afficher une notification
     console.log("Worker invited successfully!")
+    fetchServiceRequests() // Refresh service requests to show updated participants
+  }
+
+  const handleServiceRequestPress = (request) => {
+    setSelectedServiceRequest(request)
+    setShowClientLobby(true)
   }
 
   const renderStars = (rating) => {
@@ -196,9 +205,15 @@ const WorkersScreen = () => {
   const renderServiceRequestCard = (request) => {
     const isCompleted = request.status === "closed"
     const isOpen = request.status === "open"
+    const participantsCount = request.participants?.length || 0
 
     return (
-      <View key={request.id} style={styles.serviceCard}>
+      <TouchableOpacity
+        key={request.id}
+        style={styles.serviceCard}
+        onPress={() => handleServiceRequestPress(request)}
+        activeOpacity={0.7}
+      >
         <View style={styles.serviceHeader}>
           <View style={styles.serviceInfo}>
             <Text style={styles.serviceCategory}>{request.category}</Text>
@@ -245,7 +260,17 @@ const WorkersScreen = () => {
             📍 Lat: {request.latitude.toFixed(4)}, Lng: {request.longitude.toFixed(4)}
           </Text>
         </View>
-      </View>
+
+        {/* Participants indicator */}
+        {participantsCount > 0 && (
+          <View style={styles.participantsIndicator}>
+            <Text style={styles.participantsText}>
+              👥 {participantsCount} worker{participantsCount > 1 ? "s" : ""} interested
+            </Text>
+            <Text style={styles.tapToViewText}>Tap to view offers</Text>
+          </View>
+        )}
+      </TouchableOpacity>
     )
   }
 
@@ -263,8 +288,7 @@ const WorkersScreen = () => {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-     
-      <View style={styles.searchContainer}>
+        <View style={styles.searchContainer}>
           <Text style={styles.searchIcon}>🔍</Text>
           <TextInput
             style={styles.searchInput}
@@ -272,14 +296,11 @@ const WorkersScreen = () => {
             value={searchQuery}
             onChangeText={setSearchQuery}
           />
-        
         </View>
 
         {/* Title */}
         <Text style={styles.title}>Find the algiers' most skilled workers</Text>
 
-        {/* Search Bar */}
-       
         {/* Recommendation Section */}
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Recommendation</Text>
@@ -390,6 +411,16 @@ const WorkersScreen = () => {
         worker={selectedWorker}
         serviceRequests={serviceRequests}
         onSuccess={handleInviteSuccess}
+      />
+
+      {/* Client Lobby Modal */}
+      <ClientLobbyModal
+        visible={showClientLobby}
+        onClose={() => {
+          setShowClientLobby(false)
+          setSelectedServiceRequest(null)
+        }}
+        serviceRequest={selectedServiceRequest}
       />
     </SafeAreaView>
   )
@@ -817,11 +848,29 @@ const styles = StyleSheet.create({
     color: "#8E8E93",
   },
   serviceLocation: {
-    marginBottom: 0,
+    marginBottom: 8,
   },
   serviceLocationText: {
     fontSize: 12,
     color: "#8E8E93",
+  },
+  participantsIndicator: {
+    backgroundColor: "#E3F2FD",
+    padding: 8,
+    borderRadius: 8,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  participantsText: {
+    fontSize: 12,
+    color: "#1976D2",
+    fontWeight: "500",
+  },
+  tapToViewText: {
+    fontSize: 11,
+    color: "#1976D2",
+    fontStyle: "italic",
   },
   servicesLoadingContainer: {
     flexDirection: "row",

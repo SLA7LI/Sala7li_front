@@ -44,6 +44,26 @@ placeBid: async (serviceRequestId, money) =>{
   } catch (error) {
     throw error;
   }
+},
+ acceptWorker : async (serviceRequestId, workerId) => {
+  const url = "http://192.168.169.173:3000/api/v1/servicerequests/acceptworker";
+  const token = await AsyncStorage.getItem('accessToken');
+  const body = {
+    serviceRequestId,
+    workerId,
+  };
+
+  try {
+    const response = await axios.post(url, body, {
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`,
+      },
+    });
+    return response.data; // retourne la réponse de l'API
+  } catch (error) {
+    throw error;
+  }
 }
 
 
