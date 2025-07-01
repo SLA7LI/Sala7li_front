@@ -279,6 +279,25 @@ const LobbyModal = ({ visible, onClose, serviceRequest, workerRequest }) => {
                 {user?.wilaya}, {user?.baladia}
               </Text>
               <View style={styles.ratingContainer}>{renderStars(worker?.rating || 0)}</View>
+              {/* Détails supplémentaires */}
+              <Text style={styles.detailLabel}>
+                Email: <Text style={styles.detailValue}>{user?.email || "N/A"}</Text>
+              </Text>
+              <Text style={styles.detailLabel}>
+                Téléphone: <Text style={styles.detailValue}>{user?.phone || "N/A"}</Text>
+              </Text>
+              <Text style={styles.detailLabel}>
+                Métier: <Text style={styles.detailValue}>{worker?.genre || "N/A"}</Text>
+              </Text>
+              <Text style={styles.detailLabel}>
+                Bio: <Text style={styles.detailValue}>{worker?.bio || "Aucune bio"}</Text>
+              </Text>
+              <Text style={styles.detailLabel}>
+                Vérifié: <Text style={styles.detailValue}>{worker?.verified ? "Oui" : "Non"}</Text>
+              </Text>
+              <Text style={styles.detailLabel}>
+                Jobs terminés: <Text style={styles.detailValue}>{worker?.completedJobs ?? 0}</Text>
+              </Text>
             </View>
           </View>
           {worker?.verified && (
