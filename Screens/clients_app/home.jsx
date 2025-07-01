@@ -263,24 +263,8 @@ const WorkersScreen = () => {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        {/* Header */}
-        <View style={styles.header}>
-          <View style={styles.logoContainer}>
-            <View style={styles.logo}>
-              <Text style={styles.logoText}>⚡</Text>
-            </View>
-          </View>
-          <TouchableOpacity style={styles.notificationButton}>
-            <Text style={styles.notificationIcon}>🔔</Text>
-            <View style={styles.notificationBadge} />
-          </TouchableOpacity>
-        </View>
-
-        {/* Title */}
-        <Text style={styles.title}>Find the algiers' most skilled workers</Text>
-
-        {/* Search Bar */}
-        <View style={styles.searchContainer}>
+     
+      <View style={styles.searchContainer}>
           <Text style={styles.searchIcon}>🔍</Text>
           <TextInput
             style={styles.searchInput}
@@ -288,11 +272,14 @@ const WorkersScreen = () => {
             value={searchQuery}
             onChangeText={setSearchQuery}
           />
-          <TouchableOpacity style={styles.filterButton}>
-            <Text style={styles.filterIcon}>⚙️</Text>
-          </TouchableOpacity>
+        
         </View>
 
+        {/* Title */}
+        <Text style={styles.title}>Find the algiers' most skilled workers</Text>
+
+        {/* Search Bar */}
+       
         {/* Recommendation Section */}
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Recommendation</Text>
@@ -488,6 +475,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 3,
     elevation: 2,
+    marginTop: 20,
   },
   searchIcon: {
     fontSize: 18,
