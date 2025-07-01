@@ -253,7 +253,7 @@ const LobbyModal = ({ visible, onClose, serviceRequest, workerRequest }) => {
   const renderWorkerCard = (participant) => {
     const worker = participant.worker
     const user = worker?.user
-    
+
     return (
       <View key={participant.workerId} style={styles.participantCard}>
         <View style={styles.participantHeader}>
@@ -287,8 +287,11 @@ const LobbyModal = ({ visible, onClose, serviceRequest, workerRequest }) => {
             </View>
           )}
         </View>
-
         <View style={styles.participantDetails}>
+          <View style={styles.detailRow}>
+            <Text style={styles.detailLabel}>Bid:</Text>
+            <Text style={styles.bidValue}>{participant.bid} DA</Text>
+          </View>
           <View style={styles.detailRow}>
             <Text style={styles.detailLabel}>Status:</Text>
             <Text style={[
@@ -300,22 +303,16 @@ const LobbyModal = ({ visible, onClose, serviceRequest, workerRequest }) => {
               {participant.status}
             </Text>
           </View>
-          
-          {participant.bid > 0 && (
-            <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>Bid Amount:</Text>
-              <Text style={styles.bidValue}>{participant.bid} DA</Text>
-            </View>
-          )}
-          
-          <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Category:</Text>
-            <Text style={styles.detailValue}>{worker?.genre || 'General'}</Text>
-          </View>
         </View>
-
         <View style={styles.participantActions}>
-          <TouchableOpacity style={styles.acceptButton} disabled={participant.status === 'accepted'}>
+          <TouchableOpacity
+            style={[
+              styles.acceptButton,
+              participant.status === 'accepted' && { backgroundColor: '#8E8E93' }
+            ]}
+            disabled={participant.status === 'accepted' || loading}
+            onPress={() => handleAcceptWorker(participant.workerId)}
+          >
             <Text style={styles.acceptButtonText}>
               {participant.status === 'accepted' ? 'Accepted' : 'Accept Offer'}
             </Text>
@@ -324,6 +321,28 @@ const LobbyModal = ({ visible, onClose, serviceRequest, workerRequest }) => {
       </View>
     )
   }
+
+  const handleAcceptWorker = async (workerId) => {
+    try {
+      setLoading(true);
+      const serviceRequestId = serviceRequest?.id || workerRequest?.serviceRequest?.id;
+      await loby.acceptWorker(serviceRequestId, workerId);
+
+      // Mets à jour le statut localement
+      setParticipants((prev) =>
+        prev.map((p) =>
+          p.workerId === workerId
+            ? { ...p, status: "accepted" }
+            : p
+        )
+      );
+      Alert.alert("Success", "Worker accepted successfully!");
+    } catch (error) {
+      Alert.alert("Error", error.response?.data?.message || "Failed to accept worker");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   if (!visible) return null
 
@@ -399,35 +418,7 @@ const LobbyModal = ({ visible, onClose, serviceRequest, workerRequest }) => {
                     showsVerticalScrollIndicator={false}
                     keyboardShouldPersistTaps="handled"
                   >
-                    {messages.map((message) => {
-                      const isWorker = message.sender === "worker";
-                      return (
-                        <View
-                          key={message.id}
-                          style={[
-                            styles.messageContainer,
-                            isWorker ? styles.workerMessage : styles.clientMessage,
-                          ]}
-                        >
-                          <View
-                            style={[
-                              styles.messageBubble,
-                              isWorker ? styles.workerBubble : styles.clientBubble,
-                            ]}
-                          >
-                            <Text
-                              style={[
-                                styles.messageText,
-                                isWorker ? styles.workerText : styles.clientText,
-                              ]}
-                            >
-                              {message.message}
-                            </Text>
-                          </View>
-                          <Text style={styles.messageTime}>{formatTime(message.timestamp)}</Text>
-                        </View>
-                      );
-                    })}
+                    {messages.map(renderMessage)}
                   </ScrollView>
                 </View>
 
@@ -459,76 +450,7 @@ const LobbyModal = ({ visible, onClose, serviceRequest, workerRequest }) => {
             ) : (
               <ScrollView style={styles.participantsList}>
                 {participants.length > 0 ? (
-                  participants.map((participant) => {
-                    const worker = participant.worker;
-                    const user = worker?.user;
-                    return (
-                      <View key={participant.workerId} style={styles.participantCard}>
-                        <View style={styles.participantHeader}>
-                          <View style={styles.profileSection}>
-                            <View style={styles.profileImageContainer}>
-                              {worker?.picture ? (
-                                <Image source={{ uri: worker.picture }} style={styles.profileImage} />
-                              ) : (
-                                <View style={styles.profileImagePlaceholder}>
-                                  <Text style={styles.profileImageText}>
-                                    {user?.name
-                                      ?.split(" ")
-                                      .map((n) => n[0])
-                                      .join("")
-                                      .toUpperCase()}
-                                  </Text>
-                                </View>
-                              )}
-                            </View>
-                            <View style={styles.workerInfo}>
-                              <Text style={styles.workerName}>{user?.name}</Text>
-                              <Text style={styles.workerLocation}>
-                                {user?.wilaya}, {user?.baladia}
-                              </Text>
-                              <View style={styles.ratingContainer}>{renderStars(worker?.rating || 0)}</View>
-                            </View>
-                          </View>
-                          {worker?.verified && (
-                            <View style={styles.verifiedBadge}>
-                              <Text style={styles.verifiedText}>✓</Text>
-                            </View>
-                          )}
-                        </View>
-                        <View style={styles.participantDetails}>
-                          <View style={styles.detailRow}>
-                            <Text style={styles.detailLabel}>Bid:</Text>
-                            <Text style={styles.bidValue}>{participant.bid} DA</Text>
-                          </View>
-                          <View style={styles.detailRow}>
-                            <Text style={styles.detailLabel}>Status:</Text>
-                            <Text style={[
-                              styles.detailValue,
-                              participant.status === 'accepted' && styles.statusAccepted,
-                              participant.status === 'pending' && styles.statusPending,
-                              participant.status === 'bidding' && styles.statusBidding
-                            ]}>
-                              {participant.status}
-                            </Text>
-                          </View>
-                        </View>
-                        <View style={styles.participantActions}>
-                          <TouchableOpacity
-                            style={[
-                              styles.acceptButton,
-                              participant.status === 'accepted' && { backgroundColor: '#8E8E93' }
-                            ]}
-                            disabled={participant.status === 'accepted'}
-                            onPress={() => handleAcceptWorker(participant.workerId)}
-                          >
-                            <Text style={styles.acceptButtonText}>
-                              {participant.status === 'accepted' ? 'Accepted' : 'Accept Offer'}
-                            </Text>
-                          </TouchableOpacity>
-                        </View>
-                      </View>
-                    )
-                  })
+                  participants.map(renderWorkerCard)
                 ) : (
                   <View style={styles.noParticipants}>
                     <Text style={styles.noParticipantsText}>No workers have joined yet</Text>

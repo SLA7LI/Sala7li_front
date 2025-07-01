@@ -3,15 +3,15 @@
 import { useNavigation } from "@react-navigation/native"
 import { useEffect, useState } from "react"
 import {
-    ActivityIndicator,
-    Alert,
-    FlatList,
-    SafeAreaView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Alert,
+  FlatList,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native"
 import Service_client from "../../api/client_service"
 import CreateServiceRequestModal from "../../components/modal"
