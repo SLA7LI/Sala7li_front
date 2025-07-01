@@ -3,6 +3,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import * as React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import AllServiceRequestsScreen from './bid';
 import WorkersScreen from './home';
 import WorkerDetailsScreen from './workerdetail';
 
@@ -22,11 +23,7 @@ const ExploreScreen = () => (
   </View>
 );
 
-const BidScreen = () => (
-  <View style={styles.container}>
-    <Text style={styles.text}>Bid Screen</Text>
-  </View>
-);
+
 
 const ProfileScreen = () => (
   <View style={styles.container}>
@@ -70,7 +67,7 @@ export default function Home_main() {
     >
       <Tab.Screen name="Home" component={HomeScreen} />
       <Tab.Screen name="Explore" component={ExploreScreen} />
-      <Tab.Screen name="Bid" component={BidScreen} />
+      <Tab.Screen name="Bid" component={AllServiceRequestsScreen} />
       <Tab.Screen name="Profile" component={ProfileScreen} />
     </Tab.Navigator>
   );
