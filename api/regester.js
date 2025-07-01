@@ -2,7 +2,7 @@ import axios from "axios";
 
 
 export async function registerAsWorker(data) {
-  const url = "http://192.168.169.76:3000/api/v1/auth/registerasworker";
+  const url = "http://172.20.10.9:3000/api/v1/auth/registerasworker";
 
   try {
     const response = await axios.post(url, data);

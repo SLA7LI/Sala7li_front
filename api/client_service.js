@@ -1,7 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 
-const api_key = 'http://192.168.169.76:3000/api/v1/';
+const api_key = 'http://172.20.10.9:3000/api/v1/';
 
 const Service_client = {
   getServiceRequestsClient: async () => {
@@ -24,10 +24,12 @@ const Service_client = {
 
   createServiceRequest: async (data) => {
     try {
+      console.log("Creating service request with data:", data);
       const token = await AsyncStorage.getItem('accessToken');
       const response = await axios.post(
-        `${api_key}/servicerequests/create`,
-        data,
+        `http://172.20.10.9:3000/api/v1/servicerequests/create`,
+        data
+,
         {
           headers: {
             "Content-Type": "application/json",
@@ -37,6 +39,7 @@ const Service_client = {
       );
       return response.data;
     } catch (error) {
+      console.error("Error creating service request:", error);
       throw error;
     }
   }

@@ -14,6 +14,7 @@ import {
 } from 'react-native';
 import Service_client from '../../api/client_service';
 import manage_worker from '../../api/worker';
+import CreateServiceRequestModal from '../../components/modal'; // Import du modal
 
 const WorkersScreen = () => {
   const navigation = useNavigation();
@@ -24,6 +25,7 @@ const WorkersScreen = () => {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedServiceFilter, setSelectedServiceFilter] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
+  const [showCreateModal, setShowCreateModal] = useState(false); // État pour le modal
 
   const categories = ['All','Electrician', 'Painter', 'Menuiserie', 'Peinture'];
   const serviceFilters = ['All', 'Done', 'Open'];
@@ -76,8 +78,12 @@ const WorkersScreen = () => {
   };
 
   const handleCreateBid = () => {
-    // Navigation vers l'écran de création de bid ou modal
-    Alert.alert('Create Bid', 'Navigate to create bid screen');
+    setShowCreateModal(true); // Ouvrir le modal
+  };
+
+  const handleModalSuccess = () => {
+    // Rafraîchir les données après création réussie
+    fetchServiceRequest();
   };
 
   const renderStars = (rating) => {
@@ -146,7 +152,6 @@ const WorkersScreen = () => {
     </View>
   );
 
-  // Rendu pour la carte de service request SANS le bouton Create Bid
   const renderServiceRequestCard = () => {
     if (!serviceRequest) return null;
     
@@ -289,7 +294,7 @@ const WorkersScreen = () => {
           {filteredWorkers.map(renderWorkerCard)}
         </ScrollView>
 
-        {/* Service Requests Section avec le bouton Create Bid en haut */}
+        {/* Service Requests Section */}
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Service Requests</Text>
           <TouchableOpacity>
@@ -297,7 +302,7 @@ const WorkersScreen = () => {
           </TouchableOpacity>
         </View>
 
-        {/* NOUVEAU: Bouton Create Bid moderne en haut de la section */}
+        {/* Create Bid Button */}
         <View style={styles.createBidSection}>
           <TouchableOpacity style={styles.modernCreateBidButton} onPress={handleCreateBid}>
             <View style={styles.createBidButtonContent}>
@@ -305,8 +310,8 @@ const WorkersScreen = () => {
                 <Text style={styles.createBidIcon}>✨</Text>
               </View>
               <View style={styles.createBidTextContainer}>
-                <Text style={styles.createBidTitle}>Create New Bid</Text>
-                <Text style={styles.createBidSubtitle}>Submit your proposal for this service</Text>
+                <Text style={styles.createBidTitle}>Create New Service Request</Text>
+                <Text style={styles.createBidSubtitle}>Submit your service request to find workers</Text>
               </View>
               <View style={styles.createBidArrow}>
                 <Text style={styles.createBidArrowText}>→</Text>
@@ -357,11 +362,20 @@ const WorkersScreen = () => {
           )}
         </View>
       </ScrollView>
+
+      {/* Modal pour créer une demande de service */}
+      <CreateServiceRequestModal
+        visible={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        onSuccess={handleModalSuccess}
+      />
     </SafeAreaView>
   );
 };
 
+// Les styles restent les mêmes que précédemment...
 const styles = StyleSheet.create({
+  // ... tous les styles précédents restent identiques
   container: {
     flex: 1,
     backgroundColor: '#F8F9FA',
@@ -633,8 +647,6 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     textAlign: 'right',
   },
-  
-  // NOUVEAUX STYLES POUR LE BOUTON CREATE BID MODERNE
   createBidSection: {
     paddingHorizontal: 20,
     marginBottom: 20,
@@ -695,8 +707,6 @@ const styles = StyleSheet.create({
     color: '#007AFF',
     fontWeight: 'bold',
   },
-  
-  // STYLES POUR LES SERVICE REQUESTS (sans le bouton Create Bid)
   servicesContainer: {
     paddingHorizontal: 20,
     marginBottom: 30,
@@ -785,7 +795,7 @@ const styles = StyleSheet.create({
     color: '#8E8E93',
   },
   serviceLocation: {
-    marginBottom: 0, // Retiré la marge du bas car plus de bouton
+    marginBottom: 0,
   },
   serviceLocationText: {
     fontSize: 12,
