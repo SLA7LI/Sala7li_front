@@ -14,6 +14,9 @@ import {
     View,
 } from "react-native"
 import { getWorkerServiceRequests } from "../../api/get_services_request_by worker"
+import { joinBidding } from "../../api/joinBinding"
+import JoinBiddingModal from "../../components/joinmadal"
+import LobbyModal from "../../components/lobymodal"
 
 const WorkerHomeScreen = () => {
   const navigation = useNavigation()
@@ -21,6 +24,11 @@ const WorkerHomeScreen = () => {
   const [loading, setLoading] = useState(true)
   const [selectedFilter, setSelectedFilter] = useState("All")
   const [searchQuery, setSearchQuery] = useState("")
+  const [showSuccessModal, setShowSuccessModal] = useState(false)
+  const [selectedServiceRequest, setSelectedServiceRequest] = useState(null)
+  const [joiningBid, setJoiningBid] = useState(null)
+  const [showLobbyModal, setShowLobbyModal] = useState(false)
+  const [selectedLobbyRequest, setSelectedLobbyRequest] = useState(null)
 
   const statusFilters = ["All", "Pending", "Bidding", "Accepted", "Completed"]
 
@@ -61,7 +69,46 @@ const WorkerHomeScreen = () => {
   const displayedRequests = filteredRequests.slice(0, 2)
 
   const handleViewAllRequests = () => {
-    navigation.navigate("WorkerDetails")
+    navigation.navigate("AllWorkerServiceRequests")
+  }
+
+  const handleJoinBidding = async (request) => {
+    try {
+      setJoiningBid(request.serviceRequestId)
+      await joinBidding(request.serviceRequest.id)
+
+      // Ouvrir le lobby après avoir rejoint avec succès
+      setSelectedLobbyRequest(request)
+      setShowLobbyModal(true)
+
+      // Rafraîchir les données après succès
+      fetchServiceRequests()
+    } catch (error) {
+      console.error("Error joining bidding:", error)
+      Alert.alert("Error", error.response?.data?.message || "Failed to join bidding. Please try again.", [
+        { text: "OK" },
+      ])
+    } finally {
+      setJoiningBid(null)
+    }
+  }
+
+  const handleViewDetails = (request) => {
+    // Ouvrir le lobby pour voir les détails et négocier
+    setSelectedLobbyRequest(request)
+    setShowLobbyModal(true)
+  }
+
+  const handleSuccessModalClose = () => {
+    setShowSuccessModal(false)
+    setSelectedServiceRequest(null)
+  }
+
+  const handleLobbyClose = () => {
+    setShowLobbyModal(false)
+    setSelectedLobbyRequest(null)
+    // Rafraîchir les données quand on ferme le lobby
+    fetchServiceRequests()
   }
 
   const getStatusColor = (status, clientCompleted, workerCompleted) => {
@@ -115,6 +162,43 @@ const WorkerHomeScreen = () => {
     }
   }
 
+  const renderActionButton = (request) => {
+    const isCompleted = request.clientCompleted && request.workerCompleted
+    const isPending = request.status === "pending"
+    const isJoining = joiningBid === request.serviceRequestId
+
+    if (isCompleted) {
+      return (
+        <TouchableOpacity style={styles.actionButton} onPress={() => handleViewDetails(request)}>
+          <Text style={styles.actionButtonText}>Enter Lobby</Text>
+        </TouchableOpacity>
+      )
+    }
+
+    if (isPending) {
+      return (
+        <TouchableOpacity
+          style={[styles.actionButton, styles.joinButton]}
+          onPress={() => handleJoinBidding(request)}
+          disabled={isJoining}
+        >
+          {isJoining ? (
+            <ActivityIndicator color="white" size="small" />
+          ) : (
+            <Text style={styles.actionButtonText}>Join</Text>
+          )}
+        </TouchableOpacity>
+      )
+    }
+
+    // Pour les autres statuts (bidding, accepted, etc.)
+    return (
+      <TouchableOpacity style={[styles.actionButton, styles.lobbyButton]} onPress={() => handleViewDetails(request)}>
+        <Text style={styles.actionButtonText}>Enter Lobby</Text>
+      </TouchableOpacity>
+    )
+  }
+
   const renderServiceRequestCard = (request) => {
     const statusInfo = getStatusColor(request.status, request.clientCompleted, request.workerCompleted)
     const serviceRequest = request.serviceRequest
@@ -155,12 +239,7 @@ const WorkerHomeScreen = () => {
           <View style={styles.serviceSource}>
             <Text style={styles.serviceSourceText}>Source: {request.source}</Text>
           </View>
-          <TouchableOpacity
-            style={styles.actionButton}
-            onPress={() => navigation.navigate("ServiceRequestDetails", { request })}
-          >
-            <Text style={styles.actionButtonText}>View Details</Text>
-          </TouchableOpacity>
+          {renderActionButton(request)}
         </View>
       </View>
     )
@@ -180,8 +259,21 @@ const WorkerHomeScreen = () => {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-     
-  <View style={styles.searchContainer}>
+        {/* Header */}
+        <View style={styles.header}>
+          <View style={styles.logoContainer}>
+            <View style={styles.logo}>
+              <Text style={styles.logoText}>🔧</Text>
+            </View>
+          </View>
+          <TouchableOpacity style={styles.notificationButton}>
+            <Text style={styles.notificationIcon}>🔔</Text>
+            <View style={styles.notificationBadge} />
+          </TouchableOpacity>
+        </View>
+
+        {/* Search Bar */}
+        <View style={styles.searchContainer}>
           <Text style={styles.searchIcon}>🔍</Text>
           <TextInput
             style={styles.searchInput}
@@ -189,15 +281,10 @@ const WorkerHomeScreen = () => {
             value={searchQuery}
             onChangeText={setSearchQuery}
           />
-          
         </View>
-
 
         {/* Title */}
         <Text style={styles.title}>Your service opportunities</Text>
-
-
-      
 
         {/* Recommendations Section */}
         <View style={styles.sectionHeader}>
@@ -259,6 +346,22 @@ const WorkerHomeScreen = () => {
           </View>
         </View>
       </ScrollView>
+
+      {/* Success Modal */}
+      <JoinBiddingModal
+        visible={showSuccessModal}
+        onClose={handleSuccessModalClose}
+        onSuccess={handleSuccessModalClose}
+        serviceRequest={selectedServiceRequest}
+      />
+
+      {/* Lobby Modal */}
+      <LobbyModal
+        visible={showLobbyModal}
+        onClose={handleLobbyClose}
+        serviceRequest={selectedLobbyRequest?.serviceRequest}
+        workerRequest={selectedLobbyRequest}
+      />
     </SafeAreaView>
   )
 }
@@ -343,7 +446,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 3,
     elevation: 2,
-    marginTop: 20,
   },
   searchIcon: {
     fontSize: 18,
@@ -354,13 +456,6 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 16,
     color: "#1D1D1F",
-  },
-  filterButton: {
-    padding: 5,
-  },
-  filterIcon: {
-    fontSize: 18,
-    color: "#8E8E93",
   },
   sectionHeader: {
     flexDirection: "row",
@@ -502,6 +597,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 8,
+    minWidth: 80,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  joinButton: {
+    backgroundColor: "#34C759",
+  },
+  lobbyButton: {
+    backgroundColor: "#FF9500",
+  },
+  disabledButton: {
+    backgroundColor: "#8E8E93",
   },
   actionButtonText: {
     fontSize: 14,
