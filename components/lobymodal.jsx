@@ -6,7 +6,9 @@ import {
     Alert,
     Animated,
     Dimensions,
+    KeyboardAvoidingView,
     Modal,
+    Platform,
     ScrollView,
     StyleSheet,
     Text,
@@ -233,121 +235,127 @@ const LobbyModal = ({ visible, onClose, serviceRequest, workerRequest }) => {
   return (
     <Modal visible={visible} transparent animationType="none" onRequestClose={handleClose}>
       <Animated.View style={[styles.overlay, { opacity: fadeAnim }]}>
-        <Animated.View style={[styles.modalContainer, { transform: [{ translateY: slideAnim }] }]}>
-          {/* Header */}
-          <View style={styles.header}>
-            <View style={styles.headerLeft}>
-              <View style={styles.statusIndicator} />
-              <View>
-                <Text style={styles.headerTitle}>Negotiation Lobby</Text>
-                <Text style={styles.headerSubtitle}>
-                  {serviceRequest?.category || workerRequest?.serviceRequest?.category}
-                </Text>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          style={{ flex: 1 }}
+          keyboardVerticalOffset={Platform.OS === "ios" ? 40 : 0}
+        >
+          <Animated.View style={[styles.modalContainer, { transform: [{ translateY: slideAnim }] }]}>
+            {/* Header */}
+            <View style={styles.header}>
+              <View style={styles.headerLeft}>
+                <View style={styles.statusIndicator} />
+                <View>
+                  <Text style={styles.headerTitle}>Negotiation Lobby</Text>
+                  <Text style={styles.headerSubtitle}>
+                    {serviceRequest?.category || workerRequest?.serviceRequest?.category}
+                  </Text>
+                </View>
               </View>
+              <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
+                <Text style={styles.closeButtonText}>✕</Text>
+              </TouchableOpacity>
             </View>
-            <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
-              <Text style={styles.closeButtonText}>✕</Text>
-            </TouchableOpacity>
-          </View>
 
-          {/* Project Info */}
-          <View style={styles.projectInfo}>
-            <View style={styles.projectHeader}>
-              <Text style={styles.projectTitle}>Project Details</Text>
-              <View style={styles.budgetContainer}>
-                <Text style={styles.budgetLabel}>Budget</Text>
-                <Text style={styles.budgetAmount}>
-                  {serviceRequest?.budget || workerRequest?.serviceRequest?.budget} DA
-                </Text>
+            {/* Project Info */}
+            <View style={styles.projectInfo}>
+              <View style={styles.projectHeader}>
+                <Text style={styles.projectTitle}>Project Details</Text>
+                <View style={styles.budgetContainer}>
+                  <Text style={styles.budgetLabel}>Budget</Text>
+                  <Text style={styles.budgetAmount}>
+                    {serviceRequest?.budget || workerRequest?.serviceRequest?.budget} DA
+                  </Text>
+                </View>
               </View>
-            </View>
-            <Text style={styles.projectDescription} numberOfLines={2}>
-              {serviceRequest?.description || workerRequest?.serviceRequest?.description}
-            </Text>
-            {currentBid && (
-              <View style={styles.currentBidContainer}>
-                <Text style={styles.currentBidLabel}>Your Current Bid</Text>
-                <Text style={styles.currentBidAmount}>{currentBid} DA</Text>
-              </View>
-            )}
-          </View>
-
-          {/* Messages */}
-          <View style={styles.messagesContainer}>
-            <Text style={styles.messagesTitle}>Discussion</Text>
-            <ScrollView
-              style={styles.messagesList}
-              showsVerticalScrollIndicator={false}
-              contentContainerStyle={styles.messagesContent}
-              keyboardShouldPersistTaps="handled"
-            >
-              {messages.map(renderMessage)}
-            </ScrollView>
-          </View>
-
-          {/* Bid Section */}
-          <View style={styles.bidSection}>
-            <Text style={styles.bidSectionTitle}>Place Your Bid</Text>
-            <View style={styles.bidInputContainer}>
-              <TextInput
-                style={styles.bidInput}
-                placeholder="Enter your bid amount"
-                value={bidAmount}
-                onChangeText={(text) => setBidAmount(text)}
-                keyboardType="numeric"
-                placeholderTextColor="#8E8E93"
-                returnKeyType="done"
-                blurOnSubmit={true}
-                autoCorrect={false}
-                autoCapitalize="none"
-              />
-              <Text style={styles.currencyLabel}>DA</Text>
-            </View>
-            <TouchableOpacity
-              style={[styles.bidButton, (!bidAmount.trim() || loading) && styles.bidButtonDisabled]}
-              onPress={handlePlaceBid}
-              disabled={!bidAmount.trim() || loading}
-            >
-              {loading ? (
-                <ActivityIndicator color="white" size="small" />
-              ) : (
-                <Text style={styles.bidButtonText}>Place Bid</Text>
+              <Text style={styles.projectDescription} numberOfLines={2}>
+                {serviceRequest?.description || workerRequest?.serviceRequest?.description}
+              </Text>
+              {currentBid && (
+                <View style={styles.currentBidContainer}>
+                  <Text style={styles.currentBidLabel}>Your Current Bid</Text>
+                  <Text style={styles.currentBidAmount}>{currentBid} DA</Text>
+                </View>
               )}
-            </TouchableOpacity>
-          </View>
+            </View>
 
-          {/* Message Input */}
-          <View style={styles.messageInputContainer}>
-            <TextInput
-              style={styles.messageInput}
-              placeholder="Type a message..."
-              value={newMessage}
-              onChangeText={(text) => setNewMessage(text)}
-              multiline={true}
-              maxLength={200}
-              placeholderTextColor="#8E8E93"
-              returnKeyType="send"
-              blurOnSubmit={false}
-              onSubmitEditing={handleSendMessage}
-              autoCorrect={true}
-              autoCapitalize="sentences"
-            />
-            <TouchableOpacity
-              style={[styles.sendButton, !newMessage.trim() && styles.sendButtonDisabled]}
-              onPress={handleSendMessage}
-              disabled={!newMessage.trim()}
-            >
-              <Text style={styles.sendButtonText}>Send</Text>
-            </TouchableOpacity>
-          </View>
+            {/* Messages */}
+            <View style={styles.messagesContainer}>
+              <Text style={styles.messagesTitle}>Discussion</Text>
+              <ScrollView
+                style={styles.messagesList}
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={styles.messagesContent}
+                keyboardShouldPersistTaps="handled"
+              >
+                {messages.map(renderMessage)}
+              </ScrollView>
+            </View>
 
-          {/* Actions */}
-          <View style={styles.actions}>
-            <TouchableOpacity style={styles.leaveButton} onPress={handleLeaveLobby} disabled={loading}>
-              <Text style={styles.leaveButtonText}>Leave Lobby</Text>
-            </TouchableOpacity>
-          </View>
-        </Animated.View>
+            {/* Bid Section */}
+            <View style={styles.bidSection}>
+              <Text style={styles.bidSectionTitle}>Place Your Bid</Text>
+              <View style={styles.bidInputContainer}>
+                <TextInput
+                  style={styles.bidInput}
+                  placeholder="Enter your bid amount"
+                  value={bidAmount}
+                  onChangeText={(text) => setBidAmount(text)}
+                  keyboardType="numeric"
+                  placeholderTextColor="#8E8E93"
+                  returnKeyType="done"
+                  blurOnSubmit={true}
+                  autoCorrect={false}
+                  autoCapitalize="none"
+                />
+                <Text style={styles.currencyLabel}>DA</Text>
+              </View>
+              <TouchableOpacity
+                style={[styles.bidButton, (!bidAmount.trim() || loading) && styles.bidButtonDisabled]}
+                onPress={handlePlaceBid}
+                disabled={!bidAmount.trim() || loading}
+              >
+                {loading ? (
+                  <ActivityIndicator color="white" size="small" />
+                ) : (
+                  <Text style={styles.bidButtonText}>Place Bid</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+
+            {/* Message Input */}
+            <View style={styles.messageInputContainer}>
+              <TextInput
+                style={styles.messageInput}
+                placeholder="Type a message..."
+                value={newMessage}
+                onChangeText={(text) => setNewMessage(text)}
+                multiline={true}
+                maxLength={200}
+                placeholderTextColor="#8E8E93"
+                returnKeyType="done" // <-- Ajoute ce bouton "Done"
+                blurOnSubmit={true}
+                onSubmitEditing={handleSendMessage}
+                autoCorrect={true}
+                autoCapitalize="sentences"
+              />
+              <TouchableOpacity
+                style={[styles.sendButton, !newMessage.trim() && styles.sendButtonDisabled]}
+                onPress={handleSendMessage}
+                disabled={!newMessage.trim()}
+              >
+                <Text style={styles.sendButtonText}>Send</Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Actions */}
+            <View style={styles.actions}>
+              <TouchableOpacity style={styles.leaveButton} onPress={handleLeaveLobby} disabled={loading}>
+                <Text style={styles.leaveButtonText}>Leave Lobby</Text>
+              </TouchableOpacity>
+            </View>
+          </Animated.View>
+        </KeyboardAvoidingView>
       </Animated.View>
     </Modal>
   )
@@ -357,7 +365,8 @@ const styles = StyleSheet.create({
   overlay: {
     flex: 1,
     backgroundColor: "rgba(0, 0, 0, 0.5)",
-    justifyContent: "flex-end",
+    justifyContent: "flex-center",
+    alignItems: "center",
   },
   modalContainer: {
     backgroundColor: "white",
