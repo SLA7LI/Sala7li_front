@@ -54,9 +54,9 @@ const FinalStepScreen = () => {
       Alert.alert('Registration Successful', 'Your profile has been created successfully.');
       
       if (profile.role === 'jobber') {
-        navigation.navigate('WorkerHome');
+        navigation.replace('HomeWorker');
       } else {
-        navigation.navigate('ClientHome');
+        navigation.replace('Home'); // nom de ta page client
       }
     } catch (error) {
       console.error('Registration failed:', error.message);
