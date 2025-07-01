@@ -1,32 +1,32 @@
-import { registerAsWorker } from '@/api/regester';
+import { registerAsClient, registerAsWorker } from '@/api/regester';
 import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import React, { useState } from 'react';
-import { ActivityIndicator, Alert, Image, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, Image, KeyboardAvoidingView, Platform, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
-const EditProfileScreen = () => {
+const FinalStepScreen = () => {
   const navigation = useNavigation();
   const route = useRoute();
-
-  // Initialize with default data or route params if available
   const { data: initialData = {} } = route.params || {};
   const [profile, setProfile] = useState({
-    name: initialData.fullName || 'Hocine Mechkak',
-    email: initialData.email || 'hocine1@example.com',
-    password: initialData.password || 'StrongPassword123!', // <-- Ajoute cette ligne
-    phone: initialData.phone || '0555123456',
-    wilaya: initialData.wilaya || 'Algiers',
-    baladia: initialData.baladia || 'Bab Ezzouar',
-    genre: initialData.selectedFields || 'Electrician',
-    bio: initialData.bio || 'Experienced electrician with over 5 years of work in residential and commercial wiring. Fast, reliable, and certified.'
+    name: initialData.fullName || '',
+    email: initialData.email || '',
+    password: initialData.password || '',
+    phone: initialData.phoneNumber || '',
+    wilaya: initialData.wilaya || '',
+    baladia: initialData.baladia || '',
+    genre: initialData.selectedFields ? initialData.selectedFields[0] : '',
+    idCard: initialData.idCard || '',
+    freelancerCard: initialData.freelancerCard || '',
+    role: initialData.role || '',
   });
-
-  const [editableBio, setEditableBio] = useState(profile.bio);
+  const [editableBio, setEditableBio] = useState(initialData.bio || '');
   const [loading, setLoading] = useState(false);
 
   const handleSave = async () => {
-    if (!profile.name || !profile.email || !profile.phone || !profile.wilaya || !profile.baladia || !profile.genre || !editableBio) {
-      Alert.alert('Error', 'Please ensure all fields are filled');
+    if (!profile.name || !profile.email || !profile.password || !profile.phone || !profile.wilaya || !profile.baladia || (!profile.genre && profile.role === 'jobber')) {
+      Alert.alert('Error', 'Please ensure all required fields are filled');
       return;
     }
 
@@ -39,15 +39,25 @@ const EditProfileScreen = () => {
       phone: profile.phone,
       wilaya: profile.wilaya,
       baladia: profile.baladia,
-      genre: Array.isArray(profile.genre) ? profile.genre[0] : profile.genre,
-      bio: editableBio
+      ...(profile.role === 'jobber' && { genre: profile.genre }),
     };
 
     try {
-      console.log('Registration data:', registrationData);
-      const response = await registerAsWorker(registrationData);
-      console.log('Registration successful:', response);
-      Alert.alert('Registration Successful', 'Your profile has been updated successfully.');
+      let response;
+      if (profile.role === 'jobber') {
+        response = await registerAsWorker(registrationData);
+      } else {
+        response = await registerAsClient(registrationData);
+      }
+      
+      await AsyncStorage.setItem('accessToken', response.accessToken);
+      Alert.alert('Registration Successful', 'Your profile has been created successfully.');
+      
+      if (profile.role === 'jobber') {
+        navigation.navigate('WorkerHome');
+      } else {
+        navigation.navigate('ClientHome');
+      }
     } catch (error) {
       console.error('Registration failed:', error.message);
       Alert.alert('Registration Failed', error.message || 'An error occurred. Please try again.');
@@ -58,90 +68,99 @@ const EditProfileScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header avec bouton retour */}
-      <View style={styles.headerContainer}>
-        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-          <Text style={styles.backText}>←</Text>
-        </TouchableOpacity>
-        
-        <View style={styles.headerTextContainer}>
-          <Text style={styles.title}>Edit Profile</Text>
-          <Text style={styles.subtitle}>Update your personal information</Text>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 60 : 0}
+      >
+        <View style={styles.headerContainer}>
+          <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+            <Text style={styles.backText}>←</Text>
+          </TouchableOpacity>
+          
+          <View style={styles.headerTextContainer}>
+            <Text style={styles.title}>Edit Profile</Text>
+            <Text style={styles.subtitle}>Update your personal information</Text>
+          </View>
         </View>
-      </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
-        {/* Photo de profil */}
-        <View style={styles.profilePictureContainer}>
-          <Image 
-            source={{ uri: 'https://randomuser.me/api/portraits/men/1.jpg' }} 
-            style={styles.profilePicture}
-          />
-          <TouchableOpacity style={styles.editPictureButton}>
-            <Ionicons name="camera" size={20} color="white" />
+        <ScrollView contentContainerStyle={styles.scrollContainer}>
+          <View style={styles.profilePictureContainer}>
+            <Image 
+              source={{ uri: 'https://randomuser.me/api/portraits/men/1.jpg' }} 
+              style={styles.profilePicture}
+            />
+            <TouchableOpacity style={styles.editPictureButton}>
+              <Ionicons name="camera" size={20} color="white" />
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.infoSection}>
+            <Text style={styles.infoLabel}>Full Name</Text>
+            <View style={styles.infoBox}>
+              <Text style={styles.infoText}>{profile.name}</Text>
+            </View>
+
+            <Text style={styles.infoLabel}>Email</Text>
+            <View style={styles.infoBox}>
+              <Text style={styles.infoText}>{profile.email}</Text>
+            </View>
+
+            <Text style={styles.infoLabel}>Phone Number</Text>
+            <View style={styles.infoBox}>
+              <Text style={styles.infoText}>{profile.phone}</Text>
+            </View>
+
+            <Text style={styles.infoLabel}>Wilaya</Text>
+            <View style={styles.infoBox}>
+              <Text style={styles.infoText}>{profile.wilaya}</Text>
+            </View>
+
+            <Text style={styles.infoLabel}>Baladiya</Text>
+            <View style={styles.infoBox}>
+              <Text style={styles.infoText}>{profile.baladia}</Text>
+            </View>
+
+            {profile.role === 'jobber' && (
+              <>
+                <Text style={styles.infoLabel}>Field of Expertise</Text>
+                <View style={styles.infoBox}>
+                  <Text style={styles.infoText}>{profile.genre}</Text>
+                </View>
+              </>
+            )}
+
+            {profile.role === 'jobber' && (
+              <>
+                <Text style={styles.infoLabel}>About You</Text>
+                <TextInput
+                  style={[styles.infoBox, styles.bioInput]}
+                  multiline
+                  numberOfLines={4}
+                  value={editableBio}
+                  onChangeText={setEditableBio}
+                  placeholder="Tell us about yourself and your experience..."
+                  placeholderTextColor="#999"
+                />
+              </>
+            )}
+          </View>
+        </ScrollView>
+
+        <View style={styles.footer}>
+          <TouchableOpacity
+            style={styles.saveButton}
+            onPress={handleSave}
+            disabled={loading}
+          >
+            {loading ? (
+              <ActivityIndicator size="small" color="white" />
+            ) : (
+              <Text style={styles.saveButtonText}>Save Changes</Text>
+            )}
           </TouchableOpacity>
         </View>
-
-        {/* Informations statiques */}
-        <View style={styles.infoSection}>
-          <Text style={styles.infoLabel}>Full Name</Text>
-          <View style={styles.infoBox}>
-            <Text style={styles.infoText}>{profile.name}</Text>
-          </View>
-
-          <Text style={styles.infoLabel}>Email</Text>
-          <View style={styles.infoBox}>
-            <Text style={styles.infoText}>{profile.email}</Text>
-          </View>
-
-          <Text style={styles.infoLabel}>Phone Number</Text>
-          <View style={styles.infoBox}>
-            <Text style={styles.infoText}>{profile.phone}</Text>
-          </View>
-
-          <Text style={styles.infoLabel}>Wilaya</Text>
-          <View style={styles.infoBox}>
-            <Text style={styles.infoText}>{profile.wilaya}</Text>
-          </View>
-
-          <Text style={styles.infoLabel}>Baladiya</Text>
-          <View style={styles.infoBox}>
-            <Text style={styles.infoText}>{profile.baladia}</Text>
-          </View>
-
-          <Text style={styles.infoLabel}>Field of Expertise</Text>
-          <View style={styles.infoBox}>
-            <Text style={styles.infoText}>{profile.genre}</Text>
-          </View>
-
-          {/* Bio éditable */}
-          <Text style={styles.infoLabel}>About You</Text>
-          <TextInput
-            style={[styles.infoBox, styles.bioInput]}
-            multiline
-            numberOfLines={4}
-            value={editableBio}
-            onChangeText={setEditableBio}
-            placeholder="Tell us about yourself and your experience..."
-            placeholderTextColor="#999"
-          />
-        </View>
-      </ScrollView>
-
-      {/* Bouton Save */}
-      <View style={styles.footer}>
-        <TouchableOpacity
-          style={styles.saveButton}
-          onPress={handleSave}
-          disabled={loading}
-        >
-          {loading ? (
-            <ActivityIndicator size="small" color="white" />
-          ) : (
-            <Text style={styles.saveButtonText}>Save Changes</Text>
-          )}
-        </TouchableOpacity>
-      </View>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };
@@ -261,4 +280,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default EditProfileScreen;
+export default FinalStepScreen;

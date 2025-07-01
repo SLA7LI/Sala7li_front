@@ -1,6 +1,6 @@
 import { useNavigation, useRoute } from '@react-navigation/native';
 import React, { useState } from 'react';
-import { SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const ExpertiseSelectionScreen = () => {
   const navigator = useNavigation();
@@ -35,73 +35,76 @@ const ExpertiseSelectionScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header avec bouton retour */}
-      <View style={styles.headerContainer}>
-        <TouchableOpacity style={styles.backButton} onPress={() => navigator.goBack()}>
-          <Text style={styles.backText}>←</Text>
-        </TouchableOpacity>
-        
-        <View style={styles.headerTextContainer}>
-          <Text style={styles.title}>What Is Your Field Of Expertise?</Text>
-          <Text style={styles.subtitle}>Please select your field of expertise (up to 1)</Text>
-        </View>
-      </View>
-
-      {/* Liste scrollable des expertises */}
-      <ScrollView 
-        contentContainerStyle={styles.scrollContainer}
-        showsVerticalScrollIndicator={false}
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 60 : 0}
       >
-        {fields.map((field, index) => (
-          <TouchableOpacity
-            key={index}
-            style={[
-              styles.fieldItem,
-              selectedFields.includes(field) && styles.fieldItemSelected,
-            ]}
-            activeOpacity={0.7}
-            onPress={() => toggleField(field)}
-          >
-            <View style={styles.checkboxContainer}>
-              <View style={[
-                styles.checkbox,
-                selectedFields.includes(field) && styles.checkboxSelected
-              ]}>
-                {selectedFields.includes(field) && (
-                  <Text style={styles.checkIcon}>✓</Text>
-                )}
-              </View>
-            </View>
-            <Text style={styles.fieldText}>{field}</Text>
+        <View style={styles.headerContainer}>
+          <TouchableOpacity style={styles.backButton} onPress={() => navigator.goBack()}>
+            <Text style={styles.backText}>←</Text>
           </TouchableOpacity>
-        ))}
-      </ScrollView>
+          
+          <View style={styles.headerTextContainer}>
+            <Text style={styles.title}>What Is Your Field Of Expertise?</Text>
+            <Text style={styles.subtitle}>Please select your field of expertise (up to 1)</Text>
+          </View>
+        </View>
 
-      {/* Bouton continuer */}
-      <View style={styles.footer}>
-        <TouchableOpacity
-          style={[
-            styles.continueButton,
-            selectedFields.length === 0 
-              ? styles.continueButtonInactive 
-              : styles.continueButtonActive
-          ]}
-          disabled={selectedFields.length === 0}
-          onPress={() => {
-            const updatedData = { ...initialData, selectedFields };
-            navigator.navigate('LocationSelection', { data: updatedData });
-          }}
+        <ScrollView 
+          contentContainerStyle={styles.scrollContainer}
+          showsVerticalScrollIndicator={false}
         >
-          <Text style={[
-            styles.continueButtonText,
-            selectedFields.length === 0 
-              ? styles.continueButtonTextInactive 
-              : styles.continueButtonTextActive
-          ]}>
-            Continue
-          </Text>
-        </TouchableOpacity>
-      </View>
+          {fields.map((field, index) => (
+            <TouchableOpacity
+              key={index}
+              style={[
+                styles.fieldItem,
+                selectedFields.includes(field) && styles.fieldItemSelected,
+              ]}
+              activeOpacity={0.7}
+              onPress={() => toggleField(field)}
+            >
+              <View style={styles.checkboxContainer}>
+                <View style={[
+                  styles.checkbox,
+                  selectedFields.includes(field) && styles.checkboxSelected
+                ]}>
+                  {selectedFields.includes(field) && (
+                    <Text style={styles.checkIcon}>✓</Text>
+                  )}
+                </View>
+              </View>
+              <Text style={styles.fieldText}>{field}</Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+
+        <View style={styles.footer}>
+          <TouchableOpacity
+            style={[
+              styles.continueButton,
+              selectedFields.length === 0 
+                ? styles.continueButtonInactive 
+                : styles.continueButtonActive
+            ]}
+            disabled={selectedFields.length === 0}
+            onPress={() => {
+              const updatedData = { ...initialData, selectedFields };
+              navigator.navigate('LocationSelection', { data: updatedData });
+            }}
+          >
+            <Text style={[
+              styles.continueButtonText,
+              selectedFields.length === 0 
+                ? styles.continueButtonTextInactive 
+                : styles.continueButtonTextActive
+            ]}>
+              Continue
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };

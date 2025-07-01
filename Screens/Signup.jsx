@@ -2,7 +2,8 @@ import { Ionicons } from '@expo/vector-icons';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import React, { useState } from 'react';
-import { SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+
 const SignUpScreen = () => {
   const navigator = useNavigation();
   const route = useRoute();
@@ -12,88 +13,105 @@ const SignUpScreen = () => {
     email: '',
     password: '',
     confirmPassword: '',
-    ...initialData,
+    role: initialData.role,
   });
+
+  const isFormValid = formData.fullName && formData.email && formData.password && formData.confirmPassword && formData.password === formData.confirmPassword;
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.logoContainer}>
-        <AntDesign name="appstore-o" size={50} color="black" />
-      </View>
-
-      <View style={styles.header}>
-        <Text style={styles.title}>Join sala7li</Text>
-        <Text style={styles.subtitle}>Discover jobs, and share your resume with 100 million recruiters</Text>
-      </View>
-
-      <View style={styles.form}>
-        <View style={styles.inputContainer}>
-          <Ionicons name="person-outline" size={24} color="#0A77FF" style={styles.icon} />
-          <TextInput
-            style={styles.input}
-            placeholder="Full Name"
-            placeholderTextColor="#999"
-            autoCapitalize="words"
-            value={formData.fullName}
-            onChangeText={(text) => setFormData({ ...formData, fullName: text })}
-          />
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 60 : 0}
+      >
+        <View style={styles.logoContainer}>
+          <AntDesign name="appstore-o" size={50} color="black" />
         </View>
 
-        <View style={styles.inputContainer}>
-          <Ionicons name="mail-outline" size={24} color="#0A77FF" style={styles.icon} />
-          <TextInput
-            style={styles.input}
-            placeholder="Email"
-            placeholderTextColor="#999"
-            keyboardType="email-address"
-            autoCapitalize="none"
-            value={formData.email}
-            onChangeText={(text) => setFormData({ ...formData, email: text })}
-          />
+        <View style={styles.header}>
+          <Text style={styles.title}>Join sala7li</Text>
+          <Text style={styles.subtitle}>Discover jobs, and share your resume with 100 million recruiters</Text>
         </View>
 
-        <View style={styles.inputContainer}>
-          <Ionicons name="lock-closed-outline" size={24} color="#0A77FF" style={styles.icon} />
-          <TextInput
-            style={styles.input}
-            placeholder="Password"
-            placeholderTextColor="#999"
-            secureTextEntry
-            value={formData.password}
-            onChangeText={(text) => setFormData({ ...formData, password: text })}
-          />
+        <View style={styles.form}>
+          <View style={styles.inputContainer}>
+            <Ionicons name="person-outline" size={24} color="#0A77FF" style={styles.icon} />
+            <TextInput
+              style={styles.input}
+              placeholder="Full Name"
+              placeholderTextColor="#999"
+              autoCapitalize="words"
+              value={formData.fullName}
+              onChangeText={(text) => setFormData({ ...formData, fullName: text })}
+            />
+          </View>
+
+          <View style={styles.inputContainer}>
+            <Ionicons name="mail-outline" size={24} color="#0A77FF" style={styles.icon} />
+            <TextInput
+              style={styles.input}
+              placeholder="Email"
+              placeholderTextColor="#999"
+              keyboardType="email-address"
+              autoCapitalize="none"
+              value={formData.email}
+              onChangeText={(text) => setFormData({ ...formData, email: text })}
+            />
+          </View>
+
+          <View style={styles.inputContainer}>
+            <Ionicons name="lock-closed-outline" size={24} color="#0A77FF" style={styles.icon} />
+            <TextInput
+              style={styles.input}
+              placeholder="Password"
+              placeholderTextColor="#999"
+              secureTextEntry
+              value={formData.password}
+              onChangeText={(text) => setFormData({ ...formData, password: text })}
+            />
+          </View>
+
+          <View style={styles.inputContainer}>
+            <Ionicons name="lock-closed-outline" size={24} color="#0A77FF" style={styles.icon} />
+            <TextInput
+              style={styles.input}
+              placeholder="Confirm Password"
+              placeholderTextColor="#999"
+              secureTextEntry
+              value={formData.confirmPassword}
+              onChangeText={(text) => setFormData({ ...formData, confirmPassword: text })}
+            />
+          </View>
         </View>
 
-        <View style={styles.inputContainer}>
-          <Ionicons name="lock-closed-outline" size={24} color="#0A77FF" style={styles.icon} />
-          <TextInput
-            style={styles.input}
-            placeholder="Confirm Password"
-            placeholderTextColor="#999"
-            secureTextEntry
-            value={formData.confirmPassword}
-            onChangeText={(text) => setFormData({ ...formData, confirmPassword: text })}
-          />
+        <View style={styles.bottomContainer}>
+          <TouchableOpacity
+            style={[
+              styles.continueButton,
+              isFormValid ? styles.continueButtonActive : styles.continueButtonInactive,
+            ]}
+            disabled={!isFormValid}
+            onPress={() => {
+              navigator.navigate('NextStep', { data: formData });
+            }}
+          >
+            <Text style={[
+              styles.continueButtonText,
+              isFormValid ? styles.continueButtonTextActive : styles.continueButtonTextInactive,
+            ]}>
+              Continue
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.signInContainer} onPress={() => navigator.navigate('Login')}>
+            <Text style={styles.signInText}>
+              Already have an account?{' '}
+              <Text style={styles.signInLink}>Sign In</Text>
+            </Text>
+          </TouchableOpacity>
         </View>
-      </View>
-
-      <View style={styles.bottomContainer}>
-        <TouchableOpacity
-          style={styles.continueButton}
-          onPress={() => {
-            navigator.navigate('NextStep', { data: formData });
-          }}
-        >
-          <Text style={styles.continueButtonText}>Continue</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.signInContainer} onPress={() => navigator.navigate('Login')}>
-          <Text style={styles.signInText}>
-            Already have an account?{' '}
-            <Text style={styles.signInLink}>Sign In</Text>
-          </Text>
-        </TouchableOpacity>
-      </View>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };
@@ -151,17 +169,30 @@ const styles = StyleSheet.create({
     marginBottom: 30,
   },
   continueButton: {
-    backgroundColor: '#0A77FF',
     padding: 15,
     borderRadius: 15,
     alignItems: 'center',
     marginLeft: 20,
     marginRight: 20,
+    borderWidth: 2,
+  },
+  continueButtonInactive: {
+    backgroundColor: 'white',
+    borderColor: '#0A77FF',
+  },
+  continueButtonActive: {
+    backgroundColor: '#0A77FF',
+    borderColor: '#0A77FF',
   },
   continueButtonText: {
-    color: 'white',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  continueButtonTextInactive: {
+    color: '#0A77FF',
+  },
+  continueButtonTextActive: {
+    color: 'white',
   },
   signInContainer: {
     marginTop: 15,

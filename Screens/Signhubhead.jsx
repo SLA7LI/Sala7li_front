@@ -1,79 +1,83 @@
 import AntDesign from '@expo/vector-icons/AntDesign';
 import { useNavigation } from '@react-navigation/native';
 import React, { useState } from 'react';
-import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+
 const RoleSelectionScreen = () => {
   const [selectedRole, setSelectedRole] = useState(null);
   const navigator = useNavigation();
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.logoContainer}>
-        <AntDesign name="appstore-o" size={50} color="black" />
-      </View>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 60 : 0}
+      >
+        <View style={styles.logoContainer}>
+          <AntDesign name="appstore-o" size={50} color="black" />
+        </View>
 
-      {/* Titre et sous-titre */}
-      <View style={styles.header}>
-        <Text style={styles.title}>Join SALA7LI</Text>
-        <Text style={styles.subtitle}>
-          Discover jobs, and share your resume with 100 million recruiters.
-        </Text>
-      </View>
+        <View style={styles.header}>
+          <Text style={styles.title}>Join SALA7LI</Text>
+          <Text style={styles.subtitle}>
+            Discover jobs, and share your resume with 100 million recruiters.
+          </Text>
+        </View>
 
-      {/* Role Selection Bubbles */}
-      <View style={styles.bubblesContainer}>
-        {/* Jobber Bubble */}
-        <TouchableOpacity
-          style={[
-            styles.bubble,
-            selectedRole === 'jobber' && styles.bubbleSelected,
-            selectedRole === 'jobber' && styles.bubbleJobber,
-          ]}
-          activeOpacity={0.8}
-          onPress={() => setSelectedRole('jobber')}
-        >
-          <Text style={styles.bubbleTitle}>Register As A Jobber</Text>
-          <Text style={styles.bubbleSubtitle}>I want to find a job.</Text>
+        <View style={styles.bubblesContainer}>
+          <TouchableOpacity
+            style={[
+              styles.bubble,
+              selectedRole === 'jobber' && styles.bubbleSelected,
+              selectedRole === 'jobber' && styles.bubbleJobber,
+            ]}
+            activeOpacity={0.8}
+            onPress={() => setSelectedRole('jobber')}
+          >
+            <Text style={styles.bubbleTitle}>Register As A Jobber</Text>
+            <Text style={styles.bubbleSubtitle}>I want to find a job.</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[
+              styles.bubble,
+              selectedRole === 'client' && styles.bubbleSelected,
+              selectedRole === 'client' && styles.bubbleJobber,
+            ]}
+            activeOpacity={0.8}
+            onPress={() => setSelectedRole('client')}
+          >
+            <Text style={styles.bubbleTitle}>Register As A Client</Text>
+            <Text style={styles.bubbleSubtitle}>I want to find someone to fix my problem.</Text>
+          </TouchableOpacity>
+        </View>
+
+        <TouchableOpacity style={styles.signInLink} onPress={() => navigator.navigate('Login')}>
+          <Text style={styles.signInText}>Already have an account? Sign In</Text>
         </TouchableOpacity>
 
-        {/* Client Bubble */}
-        <TouchableOpacity
-          style={[
-            styles.bubble,
-            selectedRole === 'client' && styles.bubbleSelected,
-            selectedRole === 'client' && styles.bubbleJobber,
-          ]}
-          activeOpacity={0.8}
-          onPress={() => setSelectedRole('client')}
-        >
-          <Text style={styles.bubbleTitle}>Register As A Client</Text>
-          <Text style={styles.bubbleSubtitle}>I want to find someone to fix my problem.</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Sign In Link */}
-      <TouchableOpacity style={styles.signInLink}>
-        <Text style={styles.signInText}>Already have an account? Sign In</Text>
-      </TouchableOpacity>
-
-      {/* Continue Button */}
-      <View style={styles.bottomContainer}>
-        <TouchableOpacity
-          style={styles.continueButton}
-          disabled={selectedRole === null}
-          activeOpacity={selectedRole === null ? 1 : 0.8}
-          onPress={() => {
-            const initialData = { role: selectedRole };
-            if (selectedRole === 'jobber') {
-              navigator.navigate('SignUp', { data: initialData });
-            } else {
-              navigator.navigate('SignUp', { data: initialData });
-            }
-          }}
-        >
-          <Text style={styles.continueButtonText}>Continue</Text>
-        </TouchableOpacity>
-      </View>
+        <View style={styles.bottomContainer}>
+          <TouchableOpacity
+            style={[
+              styles.continueButton,
+              selectedRole === null ? styles.continueButtonInactive : styles.continueButtonActive,
+            ]}
+            disabled={selectedRole === null}
+            activeOpacity={selectedRole === null ? 1 : 0.8}
+            onPress={() => {
+              navigator.navigate('SignUp', { data: { role: selectedRole } });
+            }}
+          >
+            <Text style={[
+              styles.continueButtonText,
+              selectedRole === null ? styles.continueButtonTextInactive : styles.continueButtonTextActive,
+            ]}>
+              Continue
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };
@@ -88,12 +92,6 @@ const styles = StyleSheet.create({
   logoContainer: {
     alignItems: 'center',
     marginTop: 80,
-  },
-  logo: {
-    width: 50,
-    height: 50,
-    backgroundColor: '#0A77FF',
-    borderRadius: 8,
   },
   header: {
     alignItems: 'center',
@@ -129,10 +127,10 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
-    elevation: 3, // For Android shadow
+    elevation: 3,
   },
   bubbleSelected: {
-    backgroundColor: '#E6F0FA', // Light blue background when selected
+    backgroundColor: '#E6F0FA',
     borderColor: '#0A77FF',
   },
   bubbleJobber: {
@@ -164,17 +162,30 @@ const styles = StyleSheet.create({
     marginBottom: 30,
   },
   continueButton: {
-    backgroundColor: '#0A77FF',
     padding: 15,
     borderRadius: 10,
     alignItems: 'center',
     marginLeft: 20,
     marginRight: 20,
+    borderWidth: 2,
+  },
+  continueButtonInactive: {
+    backgroundColor: 'white',
+    borderColor: '#0A77FF',
+  },
+  continueButtonActive: {
+    backgroundColor: '#0A77FF',
+    borderColor: '#0A77FF',
   },
   continueButtonText: {
-    color: 'white',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  continueButtonTextInactive: {
+    color: '#0A77FF',
+  },
+  continueButtonTextActive: {
+    color: 'white',
   },
 });
 

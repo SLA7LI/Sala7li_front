@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import React, { useState } from 'react';
-import { SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 const NextStepScreen = () => {
   const navigator = useNavigation();
@@ -14,39 +14,56 @@ const NextStepScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Your identity</Text>
-        <Text style={styles.subtitle}>Helps you discover new people and opportunities</Text>
-      </View>
-
-      <View style={styles.form}>
-        <View style={styles.inputContainer}>
-          <Ionicons name="call-outline" size={24} color="#0A77FF" style={styles.icon} />
-          <TextInput
-            style={styles.input}
-            placeholder="Phone Number"
-            placeholderTextColor="#999"
-            keyboardType="phone-pad"
-            value={formData.phoneNumber}
-            onChangeText={(text) => setFormData({ ...formData, phoneNumber: text })}
-          />
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 60 : 0}
+      >
+        <View style={styles.header}>
+          <Text style={styles.title}>Your identity</Text>
+          <Text style={styles.subtitle}>Helps you discover new people and opportunities</Text>
         </View>
-      </View>
 
-      <View style={styles.bottomContainer}>
-        <TouchableOpacity
-          style={styles.continueButton}
-          onPress={() => {
-            if (formData.role === 'jobber') {
-              navigator.navigate('ExpertiseSelection', { data: formData });
-            } else {
-              navigator.navigate('LocationSelection', { data: formData });
-            }
-          }}
-        >
-          <Text style={styles.continueButtonText}>Continue</Text>
-        </TouchableOpacity>
-      </View>
+        <View style={styles.form}>
+          <View style={styles.inputContainer}>
+            <Ionicons name="call-outline" size={24} color="#0A77FF" style={styles.icon} />
+            <TextInput
+              style={styles.input}
+              placeholder="Phone Number"
+              placeholderTextColor="#999"
+              keyboardType="phone-pad"
+              value={formData.phoneNumber}
+              onChangeText={(text) => setFormData({ ...formData, phoneNumber: text })}
+            />
+          </View>
+        </View>
+
+        <View style={styles.bottomContainer}>
+          <TouchableOpacity
+            style={[
+              styles.continueButton,
+              formData.phoneNumber ? styles
+
+.continueButtonActive : styles.continueButtonInactive,
+            ]}
+            disabled={!formData.phoneNumber}
+            onPress={() => {
+              if (formData.role === 'jobber') {
+                navigator.navigate('ExpertiseSelection', { data: formData });
+              } else {
+                navigator.navigate('LocationSelection', { data: formData });
+              }
+            }}
+          >
+            <Text style={[
+              styles.continueButtonText,
+              formData.phoneNumber ? styles.continueButtonTextActive : styles.continueButtonTextInactive,
+            ]}>
+              Continue
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };
@@ -98,17 +115,30 @@ const styles = StyleSheet.create({
     marginBottom: 30,
   },
   continueButton: {
-    backgroundColor: '#0A77FF',
     padding: 15,
     borderRadius: 15,
     alignItems: 'center',
     marginLeft: 20,
     marginRight: 20,
+    borderWidth: 2,
+  },
+  continueButtonInactive: {
+    backgroundColor: 'white',
+    borderColor: '#0A77FF',
+  },
+  continueButtonActive: {
+    backgroundColor: '#0A77FF',
+    borderColor: '#0A77FF',
   },
   continueButtonText: {
-    color: 'white',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  continueButtonTextInactive: {
+    color: '#0A77FF',
+  },
+  continueButtonTextActive: {
+    color: 'white',
   },
 });
 

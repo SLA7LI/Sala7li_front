@@ -1,14 +1,14 @@
 import { Picker } from '@react-native-picker/picker';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import React, { useState } from 'react';
-import { SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const LocationSelectionScreen = () => {
   const navigator = useNavigation();
   const route = useRoute();
   const { data: initialData = {} } = route.params || {};
-  const [selectedWilaya, setSelectedWilaya] = useState(initialData.selectedWilaya || null);
-  const [selectedBaladiya, setSelectedBaladiya] = useState(initialData.selectedBaladiya || null);
+  const [selectedWilaya, setSelectedWilaya] = useState(initialData.wilaya || null);
+  const [selectedBaladiya, setSelectedBaladiya] = useState(initialData.baladia || null);
 
   const wilayas = [
     { id: 1, name: 'Alger' },
@@ -31,92 +31,94 @@ const LocationSelectionScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header avec bouton retour */}
-      <View style={styles.headerContainer}>
-        <TouchableOpacity style={styles.backButton} onPress={() => navigator.goBack()}>
-          <Text style={styles.backText}>←</Text>
-        </TouchableOpacity>
-        
-        <View style={styles.headerTextContainer}>
-          <Text style={styles.title}>What is your wilaya and baladiya?</Text>
-          <Text style={styles.subtitle}>Wilaya is the town where you live and baladiya is the town hall where you live</Text>
-        </View>
-      </View>
-
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
-        {/* Sélection de la wilaya */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Wilaya</Text>
-          <View style={styles.pickerContainer}>
-            <Picker
-              selectedValue={selectedWilaya}
-              onValueChange={(itemValue) => {
-                setSelectedWilaya(itemValue);
-                setSelectedBaladiya(null); // Réinitialiser la baladiya quand on change de wilaya
-              }}
-              style={styles.picker}
-              dropdownIconColor="#0A77FF"
-            >
-              <Picker.Item label="Select your wilaya" value={null} />
-              {wilayas.map((wilaya) => (
-                <Picker.Item key={wilaya.id} label={wilaya.name} value={wilaya.id} />
-              ))}
-            </Picker>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 60 : 0}
+      >
+        <View style={styles.headerContainer}>
+          <TouchableOpacity style={styles.backButton} onPress={() => navigator.goBack()}>
+            <Text style={styles.backText}>←</Text>
+          </TouchableOpacity>
+          
+          <View style={styles.headerTextContainer}>
+            <Text style={styles.title}>What is your wilaya and baladiya?</Text>
+            <Text style={styles.subtitle}>Wilaya is the town where you live and baladiya is the town hall where you live</Text>
           </View>
         </View>
 
-        {/* Sélection de la baladiya */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Baladiya</Text>
-          <View style={styles.pickerContainer}>
-            <Picker
-              selectedValue={selectedBaladiya}
-              onValueChange={(itemValue) => setSelectedBaladiya(itemValue)}
-              style={styles.picker}
-              dropdownIconColor="#0A77FF"
-              enabled={!!selectedWilaya}
-            >
-              <Picker.Item 
-                label={selectedWilaya ? "Select your baladiya" : "First select a wilaya"} 
-                value={null} 
-              />
-              {selectedWilaya && baladiyas[selectedWilaya]?.map((baladiya, index) => (
-                <Picker.Item key={index} label={baladiya} value={baladiya} />
-              ))}
-            </Picker>
+        <ScrollView contentContainerStyle={styles.scrollContainer}>
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Wilaya</Text>
+            <View style={styles.pickerContainer}>
+              <Picker
+                selectedValue={selectedWilaya}
+                onValueChange={(itemValue) => {
+                  setSelectedWilaya(itemValue);
+                  setSelectedBaladiya(null);
+                }}
+                style={styles.picker}
+                dropdownIconColor="#0A77FF"
+              >
+                <Picker.Item label="Select your wilaya" value={null} />
+                {wilayas.map((wilaya) => (
+                  <Picker.Item key={wilaya.id} label={wilaya.name} value={wilaya.name} />
+                ))}
+              </Picker>
+            </View>
           </View>
-        </View>
-      </ScrollView>
 
-      {/* Bouton continuer */}
-      <View style={styles.footer}>
-        <TouchableOpacity
-          style={[
-            styles.continueButton,
-            (!selectedWilaya || !selectedBaladiya) 
-              ? styles.continueButtonInactive 
-              : styles.continueButtonActive
-          ]}
-          disabled={!selectedWilaya || !selectedBaladiya}
-          onPress={() => {
-            const updatedData = { ...initialData, selectedWilaya, selectedBaladiya };
-            if (initialData.role === 'client') {
-              navigator.navigate('IdentityVerification2', { data: updatedData });
-            } else {
-              navigator.navigate('IdentityVerification', { data: updatedData });
-            }
-          }}
-        >
-          <Text style={[
-            styles.continueButtonText,
-            (!selectedWilaya || !selectedBaladiya) 
-              ? styles.continueButtonTextInactive 
-              : styles.continueButtonTextActive
-          ]}>
-            Continue
-          </Text>
-        </TouchableOpacity>
-      </View>
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Baladiya</Text>
+            <View style={styles.pickerContainer}>
+              <Picker
+                selectedValue={selectedBaladiya}
+                onValueChange={(itemValue) => setSelectedBaladiya(itemValue)}
+                style={styles.picker}
+                dropdownIconColor="#0A77FF"
+                enabled={!!selectedWilaya}
+              >
+                <Picker.Item 
+                  label={selectedWilaya ? "Select your baladiya" : "First select a wilaya"} 
+                  value={null} 
+                />
+                {selectedWilaya && baladiyas[wilayas.find(w => w.name === selectedWilaya)?.id]?.map((baladiya, index) => (
+                  <Picker.Item key={index} label={baladiya} value={baladiya} />
+                ))}
+              </Picker>
+            </View>
+          </View>
+        </ScrollView>
+
+        <View style={styles.footer}>
+          <TouchableOpacity
+            style={[
+              styles.continueButton,
+              (!selectedWilaya || !selectedBaladiya) 
+                ? styles.continueButtonInactive 
+                : styles.continueButtonActive
+            ]}
+            disabled={!selectedWilaya || !selectedBaladiya}
+            onPress={() => {
+              const updatedData = { ...initialData, wilaya: selectedWilaya, baladia: selectedBaladiya };
+              if (initialData.role === 'client') {
+                navigator.navigate('IdentityVerification2', { data: updatedData });
+              } else {
+                navigator.navigate('IdentityVerification', { data: updatedData });
+              }
+            }}
+          >
+            <Text style={[
+              styles.continueButtonText,
+              (!selectedWilaya || !selectedBaladiya) 
+                ? styles.continueButtonTextInactive 
+                : styles.continueButtonTextActive
+            ]}>
+              Continue
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };

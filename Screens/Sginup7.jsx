@@ -2,14 +2,13 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
 import React, { useState } from 'react';
-import { Image, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image, KeyboardAvoidingView, Platform, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const IdentityVerificationScreen2 = () => {
   const navigator = useNavigation();
   const route = useRoute();
   const { data: initialData = {} } = route.params || {};
   const [idCard, setIdCard] = useState(initialData.idCard || null);
-
 
   const pickImage = async (type) => {
     let result = await ImagePicker.launchImageLibraryAsync({
@@ -22,73 +21,69 @@ const IdentityVerificationScreen2 = () => {
     if (!result.canceled) {
       if (type === 'id') {
         setIdCard(result.assets[0].uri);
-      } 
+      }
     }
   };
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header avec bouton retour */}
-      <View style={styles.headerContainer}>
-        <TouchableOpacity style={styles.backButton} onPress={() => navigator.goBack()}>
-          <Text style={styles.backText}>←</Text>
-        </TouchableOpacity>
-        
-        <View style={styles.headerTextContainer}>
-          <Text style={styles.title}>Who are you?</Text>
-          <Text style={styles.subtitle}>Select your ID card scan and bita9at mo9awil is freelancer card</Text>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 60 : 0}
+      >
+        <View style={styles.headerContainer}>
+          <TouchableOpacity style={styles.backButton} onPress={() => navigator.goBack()}>
+            <Text style={styles.backText}>←</Text>
+          </TouchableOpacity>
+          
+          <View style={styles.headerTextContainer}>
+            <Text style={styles.title}>Who are you?</Text>
+            <Text style={styles.subtitle}>Select your ID card scan</Text>
+          </View>
         </View>
-      </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
-        {/* Carte d'identité */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>ID Card</Text>
-          <TouchableOpacity 
-            style={styles.uploadBox}
-            onPress={() => pickImage('id')}
+        <ScrollView contentContainerStyle={styles.scrollContainer}>
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>ID Card</Text>
+            <TouchableOpacity 
+              style={styles.uploadBox}
+              onPress={() => pickImage('id')}
+            >
+              {idCard ? (
+                <Image source={{ uri: idCard }} style={styles.imagePreview} />
+              ) : (
+                <View style={styles.uploadContent}>
+                  <Ionicons name="cloud-upload" size={40} color="#0A77FF" />
+                  <Text style={styles.uploadText}>Tap to upload ID card</Text>
+                  <Text style={styles.uploadHint}>Front side only</Text>
+                </View>
+              )}
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+
+        <View style={styles.footer}>
+          <TouchableOpacity
+            style={[
+              styles.continueButton,
+              !idCard ? styles.continueButtonInactive : styles.continueButtonActive
+            ]}
+            disabled={!idCard}
+            onPress={() => {
+              const updatedData = { ...initialData, idCard };
+              navigator.navigate('FinalStep', { data: updatedData });
+            }}
           >
-            {idCard ? (
-              <Image source={{ uri: idCard }} style={styles.imagePreview} />
-            ) : (
-              <View style={styles.uploadContent}>
-                <Ionicons name="cloud-upload" size={40} color="#0A77FF" />
-                <Text style={styles.uploadText}>Tap to upload ID card</Text>
-                <Text style={styles.uploadHint}>Front side only</Text>
-              </View>
-            )}
+            <Text style={[
+              styles.continueButtonText,
+              !idCard ? styles.continueButtonTextInactive : styles.continueButtonTextActive
+            ]}>
+              Continue
+            </Text>
           </TouchableOpacity>
         </View>
-
-   
-      </ScrollView>
-
-      {/* Bouton continuer */}
-      <View style={styles.footer}>
-        <TouchableOpacity
-          style={[
-            styles.continueButton,
-            (!idCard ) 
-              ? styles.continueButtonInactive 
-              : styles.continueButtonActive
-          ]}
-          disabled={!idCard }
-          onPress={() => {
-            const updatedData = { ...initialData, idCard };
-            // Navigate to final screen or submit logic here
-            navigator.navigate('FinalStep', { data: updatedData });
-          }}
-        >
-          <Text style={[
-            styles.continueButtonText,
-            (!idCard ) 
-              ? styles.continueButtonTextInactive 
-              : styles.continueButtonTextActive
-          ]}>
-            Continue
-          </Text>
-        </TouchableOpacity>
-      </View>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };
