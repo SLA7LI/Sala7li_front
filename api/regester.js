@@ -8,7 +8,7 @@ export async function registerAsWorker(data) {
     const response = await axios.post(url, data);
     return response.data;
   } catch (error) {
-    // Gérer l'erreur ici (par exemple, retourner l'erreur ou l'afficher)
+
     throw error;
   }
 }
@@ -19,7 +19,7 @@ export async function registerAsClient(data) {
     const response = await axios.post(url, data);
     return response.data;
   } catch (error) {
-    // Gérer l'erreur ici (par exemple, retourner l'erreur ou l'afficher)
+
     throw error;
   }
 }

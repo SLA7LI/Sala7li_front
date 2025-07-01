@@ -29,16 +29,16 @@ const LobbyModal = ({ visible, onClose, serviceRequest, workerRequest }) => {
   const [currentBid, setCurrentBid] = useState(null)
   const [slideAnim] = useState(new Animated.Value(height))
   const [fadeAnim] = useState(new Animated.Value(0))
-  const [activeTab, setActiveTab] = useState("chat") // 'chat' or 'workers'
+  const [activeTab, setActiveTab] = useState("chat") 
   const [participants, setParticipants] = useState([])
 
-  // Messages statiques pour la démo
+
   const staticMessages = [
     {
       id: 1,
       sender: "client",
       message: "Hello! I'm interested in your services for this project.",
-      timestamp: new Date(Date.now() - 300000), // 5 minutes ago
+      timestamp: new Date(Date.now() - 300000), 
       type: "text",
     },
     {

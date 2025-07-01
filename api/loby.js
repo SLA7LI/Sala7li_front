@@ -60,7 +60,7 @@ placeBid: async (serviceRequestId, money) =>{
         "Authorization": `Bearer ${token}`,
       },
     });
-    return response.data; // retourne la réponse de l'API
+    return response.data; 
   } catch (error) {
     throw error;
   }
