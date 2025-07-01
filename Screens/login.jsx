@@ -27,7 +27,14 @@ const LoginScreen = () => {
       }
       console.log('Login successful:', response);
       Alert.alert('Login Successful', 'Welcome back!');
-      navigation.replace('Home'); // <-- Ajoute cette ligne pour naviguer vers Home
+
+      // Navigation selon le rôle
+      const userRole = response.user?.user?.role;
+      if (userRole === 'client') {
+        navigation.replace('Home'); // nom de ta page client
+      } else {
+        navigation.replace('HomeWorker'); // nom de ta page worker
+      }
     } catch (error) {
       console.error('Login failed:', error.message);
       Alert.alert('Login Failed', error.message || 'Invalid credentials. Please try again.');

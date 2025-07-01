@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const api_key = 'http://127.0.0.1:3000/api/v1/auth';
+const api_key = 'http://192.168.169.173:3000/api/v1/auth';
 
 const manage_worker = {
 

@@ -35,7 +35,7 @@ const ProfileScreen = () => (
 // Create bottom tab navigator
 const Tab = createBottomTabNavigator();
 
-export default function Home_main() {
+export default function Home_main_client() {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
