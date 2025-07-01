@@ -3,7 +3,7 @@ import axios from "axios";
 
 
 export async function inviteWorkerToServiceRequest(serviceRequestId, workerId) {
-  const url = "http://192.168.169.76:3000/api/v1/servicerequests/invite";
+  const url = "http://127.0.0.1:3000/api/v1/servicerequests/invite";
   const token = await AsyncStorage.getItem('accessToken');
   const body = {
     serviceRequestId,
