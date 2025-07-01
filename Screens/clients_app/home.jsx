@@ -385,12 +385,7 @@ const WorkersScreen = () => {
             </View>
           ) : displayedServiceRequests.length > 0 ? (
             displayedServiceRequests.map(renderServiceRequestCard)
-          ) : (
-            <View style={styles.emptyServicesContainer}>
-              <Text style={styles.emptyServicesText}>No service requests available</Text>
-              <Text style={styles.emptyServicesSubtext}>Try adjusting your filters</Text>
-            </View>
-          )}
+          ) : null /* Ne rien afficher si aucun service */}
         </View>
       </ScrollView>
 
