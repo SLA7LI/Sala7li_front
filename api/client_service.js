@@ -27,7 +27,7 @@ const Service_client = {
       console.log("Creating service request with data:", data);
       const token = await AsyncStorage.getItem('accessToken');
       const response = await axios.post(
-        `http://172.20.10.9:3000/api/v1/servicerequests/create`,
+        `http://192.168.169.76:3000/api/v1/servicerequests/create`,
         data
 ,
         {
